@@ -1,7 +1,11 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import * as path from "node:path";
 
-const SERVER_PATH = "E:/大作业/pr自动初评机器人/production/src/mcp-server/dist/index.js";
+// CI 中 orchestrator 的 working-directory 是 production/src/orchestrator，MCP Server 在 ../mcp-server/dist/index.js
+const SERVER_PATH = process.env.CI
+  ? path.join(process.cwd(), "..", "mcp-server", "dist", "index.js")
+  : "E:/大作业/pr自动初评机器人/production/src/mcp-server/dist/index.js";
 
 export interface McpCheckResult {
   tool: string;
