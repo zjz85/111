@@ -1,5 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { execSync } from "node:child_process";
 import { splitDiff, splitLargeChunks, effectiveAddedLines } from "../utils/diff-splitter.js";
 import { McpClient } from "../utils/mcp-client.js";
 import type { PRMetadata, PreprocessedPR } from "../../shared/types.js";
@@ -14,10 +15,62 @@ const HIGH_RISK_PATTERNS = [
 ];
 
 /**
+ * 判断是否在 GitHub Actions 环境中运行。
+ */
+function isCI(): boolean {
+  return !!process.env.GITHUB_ACTIONS;
+}
+
+/**
+ * 在 GitHub Actions 中通过 gh CLI 拉取 PR 数据。
+ */
+async function fetchGitHubPR(prNumber: number): Promise<PreprocessedPR> {
+  // 取 PR 元信息
+  const jsonRaw = execSync(
+    `gh pr view ${prNumber} --json number,title,author,baseRefName,headRefName,createdAt,body,files`,
+    { encoding: "utf-8" }
+  );
+  const data = JSON.parse(jsonRaw);
+
+  const changedFiles: string[] = data.files.map((f: { path: string }) => f.path);
+
+  const metadata: PRMetadata = {
+    id: `PR-${String(prNumber).padStart(3, "0")}`,
+    number: data.number,
+    title: data.title,
+    author: data.author?.login ?? "unknown",
+    baseSha: data.baseRefName,
+    headSha: data.headRefName,
+    createdAt: data.createdAt,
+    changedFiles,
+    generatedFiles: [], // CI 模式下无生成文件标记，交给 DeepSeek 判断
+  };
+
+  // 拿 diff
+  const diffText = execSync(`gh pr diff ${prNumber}`, { encoding: "utf-8" });
+
+  const prDescription = data.body ?? "";
+
+  return processPR({
+    metadata,
+    diffText,
+    prDescription,
+  });
+}
+
+/**
  * 读取一个 sample PR 并做预处理。
- * prDir 可以是 "pr-001" 或完整路径。
  */
 export async function fetchPR(prId: string): Promise<PreprocessedPR> {
+  // CI 模式：参数是 PR number
+  if (isCI()) {
+    const num = parseInt(prId, 10);
+    if (!isNaN(num)) {
+      return fetchGitHubPR(num);
+    }
+    throw new Error(`CI 模式无法解析 PR number: ${prId}`);
+  }
+
   const prDir = path.isAbsolute(prId) ? prId : path.join(SAMPLE_PRS_DIR, prId);
 
   const metaRaw = fs.readFileSync(path.join(prDir, "metadata.json"), "utf-8");
@@ -39,6 +92,19 @@ export async function fetchPR(prId: string): Promise<PreprocessedPR> {
   if (fs.existsSync(descPath)) {
     prDescription = fs.readFileSync(descPath, "utf-8").trim();
   }
+
+  return processPR({ metadata, diffText, prDescription });
+}
+
+/**
+ * 通用的 PR 预处理流程：分片 → MCP 检查 → 高风险扫描
+ */
+async function processPR(input: {
+  metadata: PRMetadata;
+  diffText: string;
+  prDescription: string;
+}): Promise<PreprocessedPR> {
+  const { metadata, diffText, prDescription } = input;
 
   // 检测 feature flag 相关变更
   const hasFlagChange = metadata.changedFiles.some(

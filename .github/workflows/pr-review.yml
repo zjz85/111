@@ -32,7 +32,8 @@ jobs:
         working-directory: production/src/orchestrator
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
-        run: npx tsx index.ts ${{ github.event.pull_request.head.sha }}
+          GH_TOKEN: ${{ github.token }}
+        run: npx tsx index.ts ${{ github.event.pull_request.number }}
 
       - name: 贴评审报告
         if: always()
