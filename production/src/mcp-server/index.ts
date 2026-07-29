@@ -14,7 +14,10 @@ import { loadAllRules, readRuleFileRaw } from "./utils/rule-parser.js";
 
 // ─── 路径常量 ───────────────────────────────────────────
 
-const DOCS_DIR = "e:\\大作业\\pr自动初评机器人\\docs";
+const DOCS_DIR = (() => {
+  if (process.env.CI) return process.cwd() + "/../../docs";
+  return "e:\\大作业\\pr自动初评机器人\\docs";
+})();
 
 // ─── 创建 MCP Server ────────────────────────────────────
 
