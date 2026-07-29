@@ -9,8 +9,7 @@ import * as path from "node:path";
 /** 规则源文件的基础路径 */
 const RULES_BASE_PATH = (() => {
   if (process.env.RULES_DIR) return process.env.RULES_DIR;
-  // CI 环境：规则文件在 repo data/team-rules/ 下
-  if (process.env.CI) return process.cwd() + "/../../data/team-rules";
+  if (process.env.GITHUB_WORKSPACE) return path.join(process.env.GITHUB_WORKSPACE, "production", "data", "team-rules");
   return "C:\\Users\\86157\\Desktop\\题目\\学生数据包\\02-PR自动初评机器人\\data\\team-rules";
 })();
 
