@@ -1,8 +1,9 @@
 import * as fs from "node:fs";
+import * as path from "node:path";
 import OpenAI from "openai";
 import type { PreprocessedPR, ReviewResult, ReviewFinding, DimensionScore } from "../../shared/types.js";
 
-const PROMPT_PATH = "e:\\大作业\\pr自动初评机器人\\production\\skills\\review-prompt.md";
+const PROMPT_PATH = path.resolve(process.cwd(), "..", "skills", "review-prompt.md");
 
 const deepseek = new OpenAI({
   baseURL: "https://api.deepseek.com",

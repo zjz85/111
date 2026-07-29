@@ -7,7 +7,7 @@ import { formatReport } from "./utils/report-formatter.js";
 import { appendRecord, checkMisrateAlert } from "./utils/record-store.js";
 import type { ReviewResult, Verdict, DualModelRecord, DualModelTrigger, Decision } from "../shared/types.js";
 
-const DATA_DIR = "e:\\大作业\\pr自动初评机器人\\production\\data";
+const DATA_DIR = path.join(process.env.CI ? process.cwd() : "e:\\大作业\\pr自动初评机器人\\production", "data");
 const RECORDS_FILE = path.join(DATA_DIR, "dual-model-records.json");
 
 // 触发双审的敏感词
