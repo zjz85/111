@@ -1,0 +1,13 @@
+{
+  "id": "PR-019",
+  "number": 219,
+  "title": "开启 checkout_v2",
+  "author": "developer-03",
+  "base_sha": "base0019",
+  "head_sha": "head0019",
+  "created_at": "2026-07-09T09:30:00+08:00",
+  "generated_files": [],
+  "changed_files": [
+    "config/flags.yaml"
+  ]
+}

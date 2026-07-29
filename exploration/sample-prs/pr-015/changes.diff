@@ -1,0 +1,6 @@
+diff --git a/test/refund-boundary.test.ts b/test/refund-boundary.test.ts
+--- a/test/refund-boundary.test.ts
++++ b/test/refund-boundary.test.ts
+@@ -1,1 +1,2 @@
++it('rejects zero', () => expect(() => refund(0)).toThrow())
++it('accepts full amount', () => expect(refund(100)).toBe(100))

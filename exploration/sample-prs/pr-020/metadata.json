@@ -1,0 +1,14 @@
+{
+  "id": "PR-020",
+  "number": 220,
+  "title": "更新错误码并补契约测试",
+  "author": "developer-04",
+  "base_sha": "base0020",
+  "head_sha": "head0020",
+  "created_at": "2026-07-10T09:30:00+08:00",
+  "generated_files": [],
+  "changed_files": [
+    "src/api/errors.ts",
+    "test/errors.contract.test.ts"
+  ]
+}

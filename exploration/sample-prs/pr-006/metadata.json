@@ -1,0 +1,13 @@
+{
+  "id": "PR-006",
+  "number": 206,
+  "title": "修正文档中的启动命令",
+  "author": "developer-06",
+  "base_sha": "base0006",
+  "head_sha": "head0006",
+  "created_at": "2026-07-06T09:30:00+08:00",
+  "generated_files": [],
+  "changed_files": [
+    "README.md"
+  ]
+}

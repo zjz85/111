@@ -1,0 +1,13 @@
+{
+  "id": "PR-007",
+  "number": 207,
+  "title": "用 any 绕过订单类型",
+  "author": "developer-07",
+  "base_sha": "base0007",
+  "head_sha": "head0007",
+  "created_at": "2026-07-07T09:30:00+08:00",
+  "generated_files": [],
+  "changed_files": [
+    "src/orders/handler.ts"
+  ]
+}

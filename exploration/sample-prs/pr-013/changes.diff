@@ -1,0 +1,11 @@
+diff --git a/package.json b/package.json
+--- a/package.json
++++ b/package.json
+@@ -1,1 +1,1 @@
+-"dependencies": {}
++"dependencies": { "zod": "^4.0.0" }
+diff --git a/package-lock.json b/package-lock.json
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -1,1 +1,1 @@
++"node_modules/zod": { "version": "4.0.0", "license": "MIT" }

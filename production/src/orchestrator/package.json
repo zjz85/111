@@ -1,0 +1,20 @@
+{
+  "name": "pr-review-orchestrator",
+  "version": "1.0.0",
+  "description": "PR自动初评机器人 - 评审编排器",
+  "main": "index.ts",
+  "type": "module",
+  "scripts": {
+    "review": "npx tsx index.ts",
+    "build": "npx tsc"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "openai": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.2",
+    "tsx": "^4.23.1",
+    "typescript": "^7.0.2"
+  }
+}

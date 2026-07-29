@@ -1,0 +1,17 @@
+diff --git a/src/order/validateOrderId.ts b/src/order/validateOrderId.ts
+--- a/src/order/validateOrderId.ts
++++ b/src/order/validateOrderId.ts
+@@ -1,1 +1,2 @@
+-export const valid = (value: string) => value.length > 0
++export const valid = (value: string) => /^ORD-[A-Z0-9]{8}$/.test(value)
++export const normalize = (value: string) => value.trim().toUpperCase()
+diff --git a/test/order/validateOrderId.test.ts b/test/order/validateOrderId.test.ts
+--- a/test/order/validateOrderId.test.ts
++++ b/test/order/validateOrderId.test.ts
+@@ -1,1 +1,6 @@
++expect(valid('ORD-AB12CD34')).toBe(true)
++expect(valid('bad')).toBe(false)
++expect(valid('')).toBe(false)
++expect(valid('ORD-12345678')).toBe(true)
++expect(normalize(' ord-ab12cd34 ')).toBe('ORD-AB12CD34')
++expect(valid('ORD-AB12CD3!')).toBe(false)

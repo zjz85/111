@@ -1,0 +1,5 @@
+diff --git a/migrations/20260701_drop_status.sql b/migrations/20260701_drop_status.sql
+--- a/migrations/20260701_drop_status.sql
++++ b/migrations/20260701_drop_status.sql
+@@ -1,1 +1,1 @@
++ALTER TABLE orders DROP COLUMN legacy_status;

@@ -1,0 +1,9 @@
+diff --git a/src/promo/eligible.ts b/src/promo/eligible.ts
+--- a/src/promo/eligible.ts
++++ b/src/promo/eligible.ts
+@@ -1,1 +1,4 @@
+-return baseEligible(order)
++if (vip && region === 'CN' && total > 500) return true
++if (!vip && coupon && total > 800) return true
++if (campaign && inventory && !blocked) return true
++return fallback(order)

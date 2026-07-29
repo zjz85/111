@@ -1,0 +1,6 @@
+diff --git a/src/money/format.ts b/src/money/format.ts
+--- a/src/money/format.ts
++++ b/src/money/format.ts
+@@ -1,1 +1,1 @@
+-return `${currency} ${amount.toFixed(2)}`
++return formatCurrency({ currency, amount })

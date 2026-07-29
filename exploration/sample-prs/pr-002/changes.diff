@@ -1,0 +1,7 @@
+diff --git a/src/controllers/user.ts b/src/controllers/user.ts
+--- a/src/controllers/user.ts
++++ b/src/controllers/user.ts
+@@ -1,1 +1,2 @@
+-return userService.get(req.params.id)
++const db = new PrismaClient()
++return db.user.findUnique({ where: { id: req.params.id } })

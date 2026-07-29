@@ -1,0 +1,7 @@
+diff --git a/src/orders/handler.ts b/src/orders/handler.ts
+--- a/src/orders/handler.ts
++++ b/src/orders/handler.ts
+@@ -1,1 +1,2 @@
+-const payload: OrderInput = validate(req.body)
++const payload: any = req.body
++return createOrder(payload)

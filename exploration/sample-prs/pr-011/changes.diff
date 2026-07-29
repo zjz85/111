@@ -1,0 +1,7 @@
+diff --git a/test/notify.test.ts b/test/notify.test.ts
+--- a/test/notify.test.ts
++++ b/test/notify.test.ts
+@@ -1,1 +1,2 @@
+-await waitFor(() => expect(sent()).toBe(true))
++await new Promise(resolve => setTimeout(resolve, 5000))
++expect(sent()).toBe(true)

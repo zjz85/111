@@ -1,0 +1,13 @@
+{
+  "id": "PR-017",
+  "number": 217,
+  "title": "避免支付回调失败",
+  "author": "developer-01",
+  "base_sha": "base0017",
+  "head_sha": "head0017",
+  "created_at": "2026-07-07T09:30:00+08:00",
+  "generated_files": [],
+  "changed_files": [
+    "src/payments/callback.ts"
+  ]
+}

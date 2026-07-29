@@ -1,0 +1,6 @@
+diff --git a/src/payments/callback.ts b/src/payments/callback.ts
+--- a/src/payments/callback.ts
++++ b/src/payments/callback.ts
+@@ -1,1 +1,1 @@
+-await processCallback(body)
++try { await processCallback(body) } catch { return { ok: true } }

@@ -1,0 +1,13 @@
+{
+  "id": "PR-004",
+  "number": 204,
+  "title": "引入日期处理依赖",
+  "author": "developer-04",
+  "base_sha": "base0004",
+  "head_sha": "head0004",
+  "created_at": "2026-07-04T09:30:00+08:00",
+  "generated_files": [],
+  "changed_files": [
+    "package.json"
+  ]
+}

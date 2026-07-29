@@ -1,0 +1,14 @@
+{
+  "id": "PR-018",
+  "number": 218,
+  "title": "为支付按钮增加可访问名称",
+  "author": "developer-02",
+  "base_sha": "base0018",
+  "head_sha": "head0018",
+  "created_at": "2026-07-08T09:30:00+08:00",
+  "generated_files": [],
+  "changed_files": [
+    "src/components/PayButton.tsx",
+    "test/PayButton.test.tsx"
+  ]
+}

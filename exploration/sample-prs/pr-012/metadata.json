@@ -1,0 +1,13 @@
+{
+  "id": "PR-012",
+  "number": 212,
+  "title": "精简用户响应字段",
+  "author": "developer-04",
+  "base_sha": "base0012",
+  "head_sha": "head0012",
+  "created_at": "2026-07-02T09:30:00+08:00",
+  "generated_files": [],
+  "changed_files": [
+    "src/users/response.ts"
+  ]
+}

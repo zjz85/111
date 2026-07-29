@@ -1,0 +1,14 @@
+{
+  "id": "PR-001",
+  "number": 201,
+  "title": "为订单号增加格式校验",
+  "author": "developer-01",
+  "base_sha": "base0001",
+  "head_sha": "head0001",
+  "created_at": "2026-07-01T09:30:00+08:00",
+  "generated_files": [],
+  "changed_files": [
+    "src/order/validateOrderId.ts",
+    "test/order/validateOrderId.test.ts"
+  ]
+}

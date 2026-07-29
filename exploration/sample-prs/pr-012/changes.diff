@@ -1,0 +1,6 @@
+diff --git a/src/users/response.ts b/src/users/response.ts
+--- a/src/users/response.ts
++++ b/src/users/response.ts
+@@ -1,1 +1,1 @@
+-return { id, email, displayName }
++return { id, email }

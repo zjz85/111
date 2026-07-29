@@ -1,0 +1,13 @@
+{
+  "id": "PR-008",
+  "number": 208,
+  "title": "记录登录失败上下文",
+  "author": "developer-08",
+  "base_sha": "base0008",
+  "head_sha": "head0008",
+  "created_at": "2026-07-08T09:30:00+08:00",
+  "generated_files": [],
+  "changed_files": [
+    "src/auth/login.ts"
+  ]
+}

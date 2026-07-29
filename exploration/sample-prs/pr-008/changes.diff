@@ -1,0 +1,6 @@
+diff --git a/src/auth/login.ts b/src/auth/login.ts
+--- a/src/auth/login.ts
++++ b/src/auth/login.ts
+@@ -1,1 +1,1 @@
+-logger.warn('login_failed', { userHash })
++logger.warn('login_failed', { email: input.email, token: input.token })

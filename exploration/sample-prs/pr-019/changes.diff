@@ -1,0 +1,6 @@
+diff --git a/config/flags.yaml b/config/flags.yaml
+--- a/config/flags.yaml
++++ b/config/flags.yaml
+@@ -1,1 +1,1 @@
+-checkout_v2: false
++checkout_v2: true

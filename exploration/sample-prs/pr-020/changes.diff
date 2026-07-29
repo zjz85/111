@@ -1,0 +1,13 @@
+diff --git a/src/api/errors.ts b/src/api/errors.ts
+--- a/src/api/errors.ts
++++ b/src/api/errors.ts
+@@ -1,1 +1,2 @@
+-code: 'INVALID'
++code: 'ORDER_ID_INVALID'
++trace_id: context.traceId
+diff --git a/test/errors.contract.test.ts b/test/errors.contract.test.ts
+--- a/test/errors.contract.test.ts
++++ b/test/errors.contract.test.ts
+@@ -1,1 +1,2 @@
++expect(error.code).toBe('ORDER_ID_INVALID')
++expect(error.trace_id).toBeDefined()

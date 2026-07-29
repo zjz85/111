@@ -1,0 +1,13 @@
+{
+  "id": "PR-015",
+  "number": 215,
+  "title": "补齐退款金额边界测试",
+  "author": "developer-07",
+  "base_sha": "base0015",
+  "head_sha": "head0015",
+  "created_at": "2026-07-05T09:30:00+08:00",
+  "generated_files": [],
+  "changed_files": [
+    "test/refund-boundary.test.ts"
+  ]
+}
