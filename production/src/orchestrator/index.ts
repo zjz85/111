@@ -127,6 +127,11 @@ async function main(prId: string) {
   const report = formatReport(pr, primaryReview, finalVerdict);
   console.log("\n" + report);
 
+  // 写报告文件，供 CI 贴评论用
+  const reportPath = path.join(process.cwd(), "report.md");
+  fs.writeFileSync(reportPath, report, "utf-8");
+  console.log(`[Report] 报告已写入: ${reportPath}`);
+
   if (dualRecord) {
     console.log(`[DualModel] 双审记录已保存: ${RECORDS_FILE}`);
   }
