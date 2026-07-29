@@ -7,11 +7,23 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 
 /** 规则源文件的基础路径 */
-const RULES_BASE_PATH = (() => {
+function resolveRulesBasePath(): string {
+  // 优先级1: 环境变量 RULES_DIR
   if (process.env.RULES_DIR) return process.env.RULES_DIR;
-  if (process.env.GITHUB_WORKSPACE) return path.join(process.env.GITHUB_WORKSPACE, "production", "data", "team-rules");
+  // 优先级2: 尝试当前目录逐级往上找 production/data/team-rules
+  const candidates = [
+    process.env.GITHUB_WORKSPACE && path.join(process.env.GITHUB_WORKSPACE, "production", "data", "team-rules"),
+    path.join(process.cwd(), "..", "..", "..", "production", "data", "team-rules"),
+    path.join(process.cwd(), "..", "..", "data", "team-rules"),
+    path.join(process.cwd(), "production", "data", "team-rules"),
+  ];
+  for (const c of candidates) {
+    if (c && fs.existsSync(c)) return c;
+  }
+  // 优先级3: 本地开发路径
   return "C:\\Users\\86157\\Desktop\\题目\\学生数据包\\02-PR自动初评机器人\\data\\team-rules";
-})();
+}
+const RULES_BASE_PATH = resolveRulesBasePath();
 
 /** 单条规则 */
 export interface Rule {
