@@ -15,7 +15,9 @@ import { loadAllRules, readRuleFileRaw } from "./utils/rule-parser.js";
 // ─── 路径常量 ───────────────────────────────────────────
 
 const DOCS_DIR = (() => {
-  if (process.env.CI) return process.cwd() + "/../../docs";
+  // MCP Server 启动时 cwd 继承自 orchestrator (production/src/orchestrator)
+  // docs 在仓库根目录，所以相对路径是 ../../../docs
+  if (process.env.CI) return process.cwd() + "/../../../docs";
   return "e:\\大作业\\pr自动初评机器人\\docs";
 })();
 
