@@ -1,11 +1,11 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { fileURLToPath } from "node:url";
 import OpenAI from "openai";
 import type { PreprocessedPR, ReviewResult, ReviewFinding, DimensionScore } from "../../shared/types.js";
 
-const __dir = path.dirname(fileURLToPath(import.meta.url));
-const PROMPT_PATH = path.resolve(__dir, "..", "..", "..", "skills", "review-prompt.md");
+const PROMPT_PATH = process.env.CI
+  ? path.join(process.env.GITHUB_WORKSPACE!, "production", "skills", "review-prompt.md")
+  : path.resolve(process.cwd(), "..", "skills", "review-prompt.md");
 
 const deepseek = new OpenAI({
   baseURL: "https://api.deepseek.com",

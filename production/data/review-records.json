@@ -48,5 +48,29 @@
     "dualModelUsed": false,
     "humanOverridden": false,
     "timestamp": "2026-07-29T13:24:53.194Z"
+  },
+  {
+    "prId": "PR-001",
+    "prNumber": 201,
+    "prTitle": "为订单号增加格式校验",
+    "decision": "pass",
+    "weightedScore": 4.35,
+    "hitRules": [],
+    "highRiskHit": false,
+    "dualModelUsed": false,
+    "humanOverridden": false,
+    "timestamp": "2026-07-29T13:58:50.157Z"
+  },
+  {
+    "prId": "PR-001",
+    "prNumber": 201,
+    "prTitle": "为订单号增加格式校验",
+    "decision": "pass",
+    "weightedScore": 4.6,
+    "hitRules": [],
+    "highRiskHit": false,
+    "dualModelUsed": false,
+    "humanOverridden": false,
+    "timestamp": "2026-07-29T15:49:12.043Z"
   }
 ]
