@@ -86,7 +86,8 @@ jobs:
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git add rejected/
-            git commit -m "Add rejected record for PR #${{ github.event.pull_request.number }}" || true
+            git add production/data/review-records.json
+            git diff --cached --quiet || git commit -m "Add rejected record for PR #${{ github.event.pull_request.number }}"
             git push
             echo "rejected 记录已提交到仓库"
           else
