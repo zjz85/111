@@ -22,6 +22,23 @@ function isCI(): boolean {
 }
 
 /**
+ * 从 PR body 中解析 ## generated_files 段落。
+ *
+ * 期望格式：
+ *   ## generated_files
+ *   - path/to/file1.ts
+ *   - path/to/file2.ts
+ */
+function parseGeneratedFilesFromBody(body: string): string[] {
+  const match = body.match(/## generated_files\n([\s\S]*?)(?=\n## |$)/);
+  if (!match) return [];
+  return match[1]
+    .split("\n")
+    .map(line => line.replace(/^-\s*/, "").trim())
+    .filter(Boolean);
+}
+
+/**
  * 在 GitHub Actions 中通过 gh CLI 拉取 PR 数据。
  */
 async function fetchGitHubPR(prNumber: number): Promise<PreprocessedPR> {
@@ -33,6 +50,8 @@ async function fetchGitHubPR(prNumber: number): Promise<PreprocessedPR> {
   const data = JSON.parse(jsonRaw);
 
   const changedFiles: string[] = data.files.map((f: { path: string }) => f.path);
+  const prBody = data.body ?? "";
+  const generatedFiles = parseGeneratedFilesFromBody(prBody);
 
   const metadata: PRMetadata = {
     id: `PR-${String(prNumber).padStart(3, "0")}`,
@@ -43,13 +62,13 @@ async function fetchGitHubPR(prNumber: number): Promise<PreprocessedPR> {
     headSha: data.headRefName,
     createdAt: data.createdAt,
     changedFiles,
-    generatedFiles: [], // CI 模式下无生成文件标记，交给 DeepSeek 判断
+    generatedFiles,
   };
 
   // 拿 diff
   const diffText = execSync(`gh pr diff ${prNumber}`, { encoding: "utf-8" });
 
-  const prDescription = data.body ?? "";
+  const prDescription = prBody;
 
   return processPR({
     metadata,
