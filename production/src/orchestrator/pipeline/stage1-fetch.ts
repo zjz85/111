@@ -43,7 +43,7 @@ async function fetchGitHubPR(prNumber: number): Promise<PreprocessedPR> {
     headSha: data.headRefName,
     createdAt: data.createdAt,
     changedFiles,
-    generatedFiles: [], // CI 模式下无生成文件标记，交给 DeepSeek 判断
+    generatedFiles: [],
   };
 
   // 拿 diff

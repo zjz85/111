@@ -6,6 +6,8 @@ const GENERATED_PATTERNS = [
   /protobuf.*\.ts$/, /\.pb\.ts$/,
 ];
 
+const GENERATED_HEADER = /^\+.*@generated/m;
+
 const DOC_PATTERNS = [
   /\.md$/, /\.mdx$/, /\.txt$/,
   /\/docs\//, /\/CHANGELOG/i, /\/README/i,
@@ -15,9 +17,13 @@ const LOCKFILE_PATTERNS = [
   /package-lock\.json$/, /yarn\.lock$/, /pnpm-lock\.yaml$/,
 ];
 
-function classifyFile(file: string, generatedFiles?: string[]): { isGenerated: boolean; isDoc: boolean; isLockfile: boolean } {
+function classifyFile(file: string, content: string, generatedFiles?: string[]): { isGenerated: boolean; isDoc: boolean; isLockfile: boolean } {
+  const nameGenerated = GENERATED_PATTERNS.some(p => p.test(file));
+  const headerGenerated = GENERATED_HEADER.test(content);
+  const taggedGenerated = generatedFiles?.includes(file) ?? false;
+
   return {
-    isGenerated: GENERATED_PATTERNS.some(p => p.test(file)) || (generatedFiles?.includes(file) ?? false),
+    isGenerated: nameGenerated || headerGenerated || taggedGenerated,
     isDoc: DOC_PATTERNS.some(p => p.test(file)),
     isLockfile: LOCKFILE_PATTERNS.some(p => p.test(file)),
   };
@@ -50,7 +56,7 @@ export function splitDiff(diffText: string, generatedFiles?: string[]): DiffChun
     const fileMatch = fileBlock.match(/diff --git a\/(\S+) b\/(\S+)/);
     if (!fileMatch) continue;
     const file = fileMatch[2];
-    const { isGenerated, isDoc, isLockfile } = classifyFile(file, generatedFiles);
+    const { isGenerated, isDoc, isLockfile } = classifyFile(file, fileBlock, generatedFiles);
     const addedLines = countAddedLines(fileBlock);
     const deletedLines = countDeletedLines(fileBlock);
 
