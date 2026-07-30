@@ -1,3 +1,4 @@
+// @generated
 export function util1() { return 1; }
 export function util2() { return 2; }
 export function util3() { return 3; }
