@@ -39,20 +39,31 @@ export class McpClient {
     hasGeneratedFiles?: boolean;
     prDescription?: string;
   }): Promise<McpCheckResult> {
-    return this.callTool("check_complexity", params);
+    return this.callTool("check_complexity", {
+      added_lines: params.addedLines,
+      deleted_lines: params.deletedLines,
+      changed_files: params.changedFiles,
+      has_generated_files: params.hasGeneratedFiles,
+      pr_description: params.prDescription,
+    });
   }
 
   async checkArchitecture(params: {
     changedFiles: string[];
     diffContent?: string;
   }): Promise<McpCheckResult> {
-    return this.callTool("check_architecture", params);
+    return this.callTool("check_architecture", {
+      changed_files: params.changedFiles,
+      diff_content: params.diffContent,
+    });
   }
 
   async checkSecurity(params: {
     diffContent: string;
   }): Promise<McpCheckResult> {
-    return this.callTool("check_security", params);
+    return this.callTool("check_security", {
+      diff_content: params.diffContent,
+    });
   }
 
   async disconnect(): Promise<void> {
