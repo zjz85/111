@@ -5,7 +5,7 @@ import { reviewPR } from "./pipeline/stage2-review.js";
 import { decide } from "./pipeline/stage3-decide.js";
 import { formatReport } from "./utils/report-formatter.js";
 import { appendRecord, checkMisrateAlert } from "./utils/record-store.js";
-import type { ReviewResult, Verdict, DualModelRecord, DualModelTrigger, Decision } from "../shared/types.js";
+import type { PreprocessedPR, ReviewResult, Verdict, DualModelRecord, DualModelTrigger, Decision } from "../shared/types.js";
 
 const DATA_DIR = path.join(process.env.CI ? process.cwd() : "e:\\大作业\\pr自动初评机器人\\production", "data");
 const RECORDS_FILE = path.join(DATA_DIR, "dual-model-records.json");
@@ -27,6 +27,68 @@ async function main(prId: string) {
   const pr = await fetchPR(prId);
   console.log(`  有效行数: ${pr.effectiveAddedLines}`);
   console.log(`  高风险: ${pr.highRiskHit ? pr.highRiskTypes.join(", ") : "无"}`);
+
+  // ── MCP 直接打回：命中 reject 级别规则，跳过 AI 评审 ──
+  const directRejectHits: Array<{ id: string; severity: string; detail: string; file?: string }> = [];
+  for (const r of pr.mcpResults) {
+    for (const h of r.hits) {
+      if (h.severity === "reject") {
+        directRejectHits.push(h);
+      }
+    }
+  }
+
+  if (directRejectHits.length > 0) {
+    console.log(`[MCP] ${directRejectHits.length} 条规则直接打回，跳过 AI 评审`);
+
+    const rejectedDir = process.env.CI
+      ? path.join(process.cwd(), "..", "..", "..", "rejected")
+      : "e:\\大作业\\pr自动初评机器人\\rejected";
+    fs.mkdirSync(rejectedDir, { recursive: true });
+    const rejectedMd = generateRejectedMarkdown(pr, directRejectHits);
+    const rejectedPath = path.join(rejectedDir, `${pr.metadata.id}.md`);
+    fs.writeFileSync(rejectedPath, rejectedMd, "utf-8");
+    console.log(`[Rejected] 打回记录已写入: ${rejectedPath}`);
+
+    const directVerdict: Verdict = {
+      prId: pr.metadata.id,
+      decision: "reject",
+      reason: directRejectHits.map(h => `${h.id}: ${h.detail}`).join("；"),
+      findings: directRejectHits.map(h => ({
+        file: h.file ?? "",
+        line: 0,
+        dimension: "correctness" as const,
+        ruleId: h.id,
+        severity: "reject" as const,
+        summary: h.id,
+        detail: h.detail,
+      })),
+      reportMarkdown: "",
+    };
+
+    const emptyReview = { prId: pr.metadata.id, dimensionScores: [], uncertain: false, summary: "MCP 直接打回，未进入 AI 评审" };
+    const report = formatReport(pr, emptyReview, directVerdict);
+    console.log("\n" + report);
+
+    const reportPath = path.join(process.cwd(), "report.md");
+    fs.writeFileSync(reportPath, report, "utf-8");
+    console.log(`[Report] 报告已写入: ${reportPath}`);
+
+    appendRecord({
+      prId: pr.metadata.id,
+      prNumber: pr.metadata.number,
+      prTitle: pr.metadata.title,
+      decision: "reject",
+      weightedScore: 0,
+      hitRules: directRejectHits.map(h => h.id),
+      highRiskHit: pr.highRiskHit,
+      dualModelUsed: false,
+      humanOverridden: false,
+      timestamp: new Date().toISOString(),
+    });
+
+    return { pr, primaryReview: emptyReview, verdict: directVerdict, report, dualRecord: null };
+  }
 
   // ── 高风险 → 生成 Codex-reviewer 输入文件 ──
   if (pr.highRiskHit) {
@@ -186,6 +248,52 @@ ${diffText}
   }
 
   return { pr, primaryReview, verdict: finalVerdict, report, dualRecord };
+}
+
+function generateRejectedMarkdown(
+  pr: PreprocessedPR,
+  hits: Array<{ id: string; severity: string; detail: string; file?: string }>,
+): string {
+  const m = pr.metadata;
+  const lines: string[] = [];
+
+  lines.push(`# ${m.id} 打回记录`);
+  lines.push("");
+  lines.push("| 项目 | 值 |");
+  lines.push("|---|---|");
+  lines.push(`| PR ID | ${m.id} |`);
+  lines.push(`| 标题 | ${m.title} |`);
+  lines.push(`| 作者 | ${m.author} |`);
+  lines.push(`| 变更文件 | ${m.changedFiles.length}（${m.changedFiles.join("、")}） |`);
+  lines.push(`| 新增行数 | ${pr.effectiveAddedLines} |`);
+  lines.push(`| 拒绝原因 | ${hits.map(h => h.id).join("、")} |`);
+  lines.push("");
+
+  lines.push("## 违规项");
+  lines.push("");
+  lines.push("| 定位 | 问题 | 规范ID |");
+  lines.push("|---|---|---|");
+  for (const h of hits) {
+    const loc = h.file ? `\`[${h.file}]\`` : "—";
+    lines.push(`| ${loc} | ${h.detail} | ${h.id} |`);
+  }
+  lines.push("");
+
+  lines.push("## 改进建议");
+  lines.push("");
+
+  for (const h of hits) {
+    if (h.id === "ARCH-001") {
+      lines.push(`- **${h.id}**: 将数据库访问逻辑下沉到 application service 层，Controller 只负责请求路由和参数校验`);
+    } else if (h.id === "SCOPE-001") {
+      lines.push(`- **${h.id}**: 将 PR 拆分为多个小 PR，每个控制在 500 行以内`);
+    } else {
+      lines.push(`- **${h.id}**: 请根据规范要求修改`);
+    }
+  }
+  lines.push("");
+
+  return lines.join("\n");
 }
 
 function calcWeighted(review: { dimensionScores: Array<{ dimension: string; score: number }> }): string {
