@@ -20,7 +20,7 @@
     "hitRules": [],
     "highRiskHit": false,
     "dualModelUsed": true,
-    "humanOverridden": false,
+    "humanOverridden": true,
     "timestamp": "2026-07-29T13:21:00.989Z"
   },
   {
