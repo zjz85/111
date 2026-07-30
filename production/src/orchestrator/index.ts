@@ -38,8 +38,8 @@ async function main(prId: string) {
     }
   }
 
-  // 有效行数 > 500 且非生成文件 → SCOPE-001 直接打回
-  if (pr.effectiveAddedLines > 500 && !pr.hasGeneratedFiles) {
+  // 有效行数 > 500（已排除生成文件）→ SCOPE-001 直接打回
+  if (pr.effectiveAddedLines > 500) {
     directRejectHits.push({
       id: "SCOPE-001",
       severity: "reject",
