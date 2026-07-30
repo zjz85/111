@@ -3,9 +3,9 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 import * as path from "node:path";
 
 // MCP Server 入口路径
-const SERVER_ENTRY = process.env.CI
-  ? path.join(process.env.GITHUB_WORKSPACE!, "production", "src", "mcp-server", "index.ts")
-  : "E:/大作业/pr自动初评机器人/production/src/mcp-server/dist/index.js";
+const SERVER_ENTRY = process.env.GITHUB_ACTIONS
+  ? path.join(process.env.GITHUB_WORKSPACE!, "production", "src", "mcp-server", "dist", "index.js")
+  : path.resolve(process.cwd(), "..", "mcp-server", "dist", "index.js");
 
 export interface McpCheckResult {
   tool: string;
@@ -19,9 +19,10 @@ export class McpClient {
   private transport: StdioClientTransport | null = null;
 
   async connect(): Promise<void> {
+    const isCI = !!process.env.GITHUB_ACTIONS;
     this.transport = new StdioClientTransport({
-      command: "npx",
-      args: ["tsx", SERVER_ENTRY],
+      command: isCI ? "node" : "npx",
+      args: isCI ? [SERVER_ENTRY] : ["tsx", SERVER_ENTRY],
     });
 
     this.client = new Client(
