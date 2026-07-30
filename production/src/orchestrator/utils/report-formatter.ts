@@ -64,7 +64,7 @@ export function formatReport(pr: PreprocessedPR, review: ReviewResult, verdict: 
   lines.push("");
 
   // ── 问题清单 ──────────────────────────────────
-  const allFindings = collectFindings(review, pr);
+  const allFindings = collectFindings(review, pr, verdict);
   if (allFindings.length > 0) {
     lines.push("### 问题清单");
     lines.push("");
@@ -103,7 +103,12 @@ export function formatReport(pr: PreprocessedPR, review: ReviewResult, verdict: 
   return lines.join("\n");
 }
 
-function collectFindings(review: ReviewResult, pr: PreprocessedPR): ReviewFinding[] {
+function collectFindings(review: ReviewResult, pr: PreprocessedPR, verdict?: Verdict): ReviewFinding[] {
+  // 直接打回时，从 verdict.findings 取，已包含全部打回项
+  if (verdict?.decision === "reject" && verdict.findings.length > 0) {
+    return verdict.findings;
+  }
+
   const all: ReviewFinding[] = [];
 
   for (const r of pr.mcpResults) {

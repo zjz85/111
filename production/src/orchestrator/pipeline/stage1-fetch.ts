@@ -135,7 +135,7 @@ async function processPR(input: {
     const complexity = await mcp.checkComplexity({
       addedLines: effectiveLines,
       changedFiles: metadata.changedFiles.length,
-      hasGeneratedFiles,
+      hasGeneratedFiles: false, // 生成文件已在 effectiveLines 中排除
       prDescription: metadata.title,
     });
     mcpResults.push(complexity);
