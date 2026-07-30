@@ -256,6 +256,21 @@ ${diffText}
     console.log(`[DualModel] 双审记录已保存: ${RECORDS_FILE}`);
   }
 
+  // ── AI 评审打回写入 rejected/ ──────────────────
+  if (finalVerdict.decision === "reject" && !directRejectHits.length) {
+    const rejectedDir = process.env.GITHUB_ACTIONS
+      ? path.join(process.cwd(), "..", "..", "..", "rejected")
+      : "e:\\大作业\\pr自动初评机器人\\rejected";
+    fs.mkdirSync(rejectedDir, { recursive: true });
+    const rejectFindings = finalVerdict.findings
+      .filter(f => f.severity === "reject")
+      .map(f => ({ id: f.ruleId ?? "UNKNOWN", severity: f.severity, detail: f.detail || f.summary, file: f.file }));
+    const rejectedMd = generateRejectedMarkdown(pr, rejectFindings);
+    const rejectedPath = path.join(rejectedDir, `${pr.metadata.id}.md`);
+    fs.writeFileSync(rejectedPath, rejectedMd, "utf-8");
+    console.log(`[Rejected] 打回记录已写入: ${rejectedPath}`);
+  }
+
   return { pr, primaryReview, verdict: finalVerdict, report, dualRecord };
 }
 
