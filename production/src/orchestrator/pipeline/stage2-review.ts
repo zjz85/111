@@ -3,7 +3,7 @@ import * as path from "node:path";
 import OpenAI from "openai";
 import type { PreprocessedPR, ReviewResult, ReviewFinding, DimensionScore } from "../../shared/types.js";
 
-const PROMPT_PATH = process.env.CI
+const PROMPT_PATH = process.env.GITHUB_ACTIONS
   ? path.join(process.env.GITHUB_WORKSPACE!, "production", "skills", "review-prompt.md")
   : path.resolve(process.cwd(), "..", "skills", "review-prompt.md");
 

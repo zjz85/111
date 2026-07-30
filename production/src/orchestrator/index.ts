@@ -7,7 +7,7 @@ import { formatReport } from "./utils/report-formatter.js";
 import { appendRecord, checkMisrateAlert } from "./utils/record-store.js";
 import type { PreprocessedPR, ReviewResult, Verdict, DualModelRecord, DualModelTrigger, Decision } from "../shared/types.js";
 
-const DATA_DIR = path.join(process.env.CI ? process.cwd() : "e:\\大作业\\pr自动初评机器人\\production", "data");
+const DATA_DIR = path.join(process.env.GITHUB_ACTIONS ? process.cwd() : "e:\\大作业\\pr自动初评机器人\\production", "data");
 const RECORDS_FILE = path.join(DATA_DIR, "dual-model-records.json");
 
 // 触发双审的敏感词
@@ -50,7 +50,7 @@ async function main(prId: string) {
   if (directRejectHits.length > 0) {
     console.log(`[MCP] ${directRejectHits.length} 条规则直接打回，跳过 AI 评审`);
 
-    const rejectedDir = process.env.CI
+    const rejectedDir = process.env.GITHUB_ACTIONS
       ? path.join(process.cwd(), "..", "..", "..", "rejected")
       : "e:\\大作业\\pr自动初评机器人\\rejected";
     fs.mkdirSync(rejectedDir, { recursive: true });
