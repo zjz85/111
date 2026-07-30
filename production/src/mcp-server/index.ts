@@ -167,17 +167,19 @@ server.registerTool(
     const { added_lines, changed_files, has_generated_files, pr_description } = args;
     const hits: Array<{ id: string; severity: "reject" | "warning"; detail: string }> = [];
 
-    if (has_generated_files) {
+    // 生成文件已在 effectiveAddedLines 中排除，不再特殊处理
+    if (added_lines > 500) {
+      hits.push({
+        id: "SCOPE-001",
+        severity: "reject",
+        detail: `有效行数 ${added_lines} 行超过 500 行阈值，应拆分为多个小型 PR。`,
+      });
+    } else if (has_generated_files && added_lines > 500) {
+      // 兜底：如果调用方没排除生成文件，降级 warning
       hits.push({
         id: "SCOPE-001",
         severity: "warning",
         detail: `PR 包含 ${added_lines} 行变更，但标记了生成文件——已从统计中排除。请人工确认生成文件比例是否合理。`,
-      });
-    } else if (added_lines > 500) {
-      hits.push({
-        id: "SCOPE-001",
-        severity: "reject",
-        detail: `功能性 diff ${added_lines} 行超过 500 行阈值，应拆分为多个 PR。`,
       });
     }
 
