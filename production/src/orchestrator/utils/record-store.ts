@@ -2,7 +2,9 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import type { ReviewRecord } from "../../shared/types.js";
 
-const DATA_DIR = path.join(process.env.GITHUB_ACTIONS ? process.cwd() : "e:\\大作业\\pr自动初评机器人\\production", "data");
+const DATA_DIR = process.env.GITHUB_ACTIONS
+  ? path.join(process.env.GITHUB_WORKSPACE ?? process.cwd(), "production", "data")
+  : path.join("e:\\大作业\\pr自动初评机器人\\production", "data");
 const RECORDS_FILE = path.join(DATA_DIR, "review-records.json");
 
 /**
