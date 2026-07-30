@@ -28,6 +28,55 @@ async function main(prId: string) {
   console.log(`  有效行数: ${pr.effectiveAddedLines}`);
   console.log(`  高风险: ${pr.highRiskHit ? pr.highRiskTypes.join(", ") : "无"}`);
 
+  // ── 高风险 → 生成 Codex-reviewer 输入文件 ──
+  if (pr.highRiskHit) {
+    const codexDir = path.join(process.cwd(), "..", "..", "..", "multi-model-log");
+    fs.mkdirSync(codexDir, { recursive: true });
+    const diffText = pr.diffChunks.map(c => c.content).join("\n\n");
+    const codexContent = `---
+name: Codex-reviewer 复审请求
+trigger: ${pr.highRiskTypes.join("、")}
+pr: ${pr.metadata.id}
+---
+
+## PR Diff
+
+${diffText}
+
+## 触发原因
+
+高风险代码扫描命中了：${pr.highRiskTypes.join("、")}
+
+## 任务
+
+请作为 Codex-reviewer，对以上 Diff 做正确性深度检查：
+
+| 类别 | 找什么 |
+|---|---|
+| SQL 注入 | 用户输入直接拼到 SQL 查询里 |
+| 空指针 / 未定义 | 没检查 null/undefined 就直接用 |
+| 逻辑错误 | 条件写反、循环不对、返回值错 |
+| 竞态条件 | 并发读写共享变量 |
+| 边界情况 | 空数组、0、空字符串、超大值 |
+| 语法错误 | 少括号、引用不存在的变量 |
+| 异常处理 | try-catch 吞错误 |
+
+## 输出格式
+
+| 定位 | 问题 | 规范引用 | 危害说明 | 严重等级 |
+|---|---|---|---|---|
+| \`[文件，行]\` | 说明 | 规范ID | 危害 | 打回/建议 |
+
+## Codex 报告回存位置
+
+评审完成后，将结果 Markdown 保存到：\`${codexDir}/${pr.metadata.id}-codex-review-report.md\`
+`;
+
+    const codexFile = path.join(codexDir, `${pr.metadata.id}-codex-review.md`);
+    fs.writeFileSync(codexFile, codexContent, "utf-8");
+    console.log(`[Codex-reviewer] 复审文件已生成: ${codexFile}`);
+  }
+
   // ── Stage 2: 主审 (deepseek-chat) ───────────
   console.log("[Stage2] 主审 (deepseek-chat) 评审中...");
   const primaryReview = await reviewPR(pr, "deepseek-chat");

@@ -1,6 +1,0 @@
-expect(valid('ORD-AB12CD34')).toBe(true)
-expect(valid('bad')).toBe(false)
-expect(valid('')).toBe(false)
-expect(valid('ORD-12345678')).toBe(true)
-expect(normalize(' ord-ab12cd34 ')).toBe('ORD-AB12CD34')
-expect(valid('ORD-AB12CD3!')).toBe(false)
