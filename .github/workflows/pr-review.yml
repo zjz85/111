@@ -8,11 +8,13 @@ jobs:
   review:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       pull-requests: write
     steps:
       - name: 拉取代码
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
 
       - name: 安装 Node.js
         uses: actions/setup-node@v4
@@ -44,6 +46,7 @@ jobs:
           npx tsx index.ts ${{ github.event.pull_request.number }} 2>&1 | tee ci-output.log
 
       - name: 贴评审报告
+        id: post-report
         if: always()
         uses: actions/github-script@v7
         with:
@@ -74,3 +77,17 @@ jobs:
             } else {
               console.log("未找到报告或日志文件，跳过");
             }
+
+      - name: 提交 rejected 记录到仓库
+        if: always()
+        run: |
+          if [ -d "rejected" ] && [ "$(ls -A rejected 2>/dev/null)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add rejected/
+            git commit -m "Add rejected record for PR #${{ github.event.pull_request.number }}" || true
+            git push
+            echo "rejected 记录已提交到仓库"
+          else
+            echo "无 rejected 文件，跳过"
+          fi

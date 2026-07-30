@@ -38,6 +38,15 @@ async function main(prId: string) {
     }
   }
 
+  // 有效行数 > 500 且非生成文件 → SCOPE-001 直接打回
+  if (pr.effectiveAddedLines > 500 && !pr.hasGeneratedFiles) {
+    directRejectHits.push({
+      id: "SCOPE-001",
+      severity: "reject",
+      detail: `功能性 diff ${pr.effectiveAddedLines} 行超过 500 行阈值，应拆分为多个小型 PR。`,
+    });
+  }
+
   if (directRejectHits.length > 0) {
     console.log(`[MCP] ${directRejectHits.length} 条规则直接打回，跳过 AI 评审`);
 
