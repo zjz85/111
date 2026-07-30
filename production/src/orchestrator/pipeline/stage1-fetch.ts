@@ -34,15 +34,6 @@ async function fetchGitHubPR(prNumber: number): Promise<PreprocessedPR> {
 
   const changedFiles: string[] = data.files.map((f: { path: string }) => f.path);
 
-  // 自动识别生成文件（复用 diff-splitter 的 GENERATED_PATTERNS 逻辑）
-  const GENERATED_PATTERNS = [
-    /\/dist\//, /\/build\//, /\/node_modules\//,
-    /\.(min\.js|bundle\.js|generated\.ts)$/,
-    /protobuf.*\.ts$/, /\.pb\.ts$/,
-    /\/generated\//,
-  ];
-  const generatedFiles = changedFiles.filter(f => GENERATED_PATTERNS.some(p => p.test(f)));
-
   const metadata: PRMetadata = {
     id: `PR-${String(prNumber).padStart(3, "0")}`,
     number: data.number,
@@ -52,7 +43,7 @@ async function fetchGitHubPR(prNumber: number): Promise<PreprocessedPR> {
     headSha: data.headRefName,
     createdAt: data.createdAt,
     changedFiles,
-    generatedFiles,
+    generatedFiles: [], // CI 模式下无生成文件标记，交给 DeepSeek 判断
   };
 
   // 拿 diff
@@ -135,7 +126,7 @@ async function processPR(input: {
     const complexity = await mcp.checkComplexity({
       addedLines: effectiveLines,
       changedFiles: metadata.changedFiles.length,
-      hasGeneratedFiles: false, // 生成文件已在 effectiveLines 中排除
+      hasGeneratedFiles,
       prDescription: metadata.title,
     });
     mcpResults.push(complexity);

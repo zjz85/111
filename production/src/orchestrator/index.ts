@@ -5,7 +5,6 @@ import { reviewPR } from "./pipeline/stage2-review.js";
 import { decide } from "./pipeline/stage3-decide.js";
 import { formatReport } from "./utils/report-formatter.js";
 import { appendRecord, checkMisrateAlert } from "./utils/record-store.js";
-import { effectiveAddedLines } from "./utils/diff-splitter.js";
 import type { PreprocessedPR, ReviewResult, Verdict, DualModelRecord, DualModelTrigger, Decision } from "../shared/types.js";
 
 const DATA_DIR = path.join(process.env.CI ? process.cwd() : "e:\\大作业\\pr自动初评机器人\\production", "data");
@@ -39,17 +38,12 @@ async function main(prId: string) {
     }
   }
 
-
-  // 生成文件通过 `metadata.generatedFiles` + `splitDiff` 已自动过滤，有效行数不含生成代码
-  const nonGeneratedChunks = pr.diffChunks.filter(c => !c.isGenerated && !c.isDoc && !c.isLockfile);
-  const nhits = effectiveAddedLines(nonGeneratedChunks);
-
-  // 有效行数 > 500（已排除生成文件）→ SCOPE-001 直接打回
-  if (nhits > 500) {
+  // 有效行数 > 500 且非生成文件 → SCOPE-001 直接打回
+  if (pr.effectiveAddedLines > 500 && !pr.hasGeneratedFiles) {
     directRejectHits.push({
       id: "SCOPE-001",
       severity: "reject",
-      detail: `功能性 diff ${nhits} 行超过 500 行阈值，应拆分为多个小型 PR。`,
+      detail: `功能性 diff ${pr.effectiveAddedLines} 行超过 500 行阈值，应拆分为多个小型 PR。`,
     });
   }
 
