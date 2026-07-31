@@ -86,5 +86,19 @@
     "dualModelUsed": false,
     "humanOverridden": false,
     "timestamp": "2026-07-31T13:11:49.963Z"
+  },
+  {
+    "prId": "PR-008",
+    "prNumber": 8,
+    "prTitle": "Test/delete test file",
+    "decision": "reject",
+    "weightedScore": 0,
+    "hitRules": [
+      "TEST-002"
+    ],
+    "highRiskHit": false,
+    "dualModelUsed": false,
+    "humanOverridden": false,
+    "timestamp": "2026-07-31T13:23:33.384Z"
   }
 ]
