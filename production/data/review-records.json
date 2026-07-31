@@ -72,5 +72,17 @@
     "dualModelUsed": false,
     "humanOverridden": false,
     "timestamp": "2026-07-29T15:49:12.043Z"
+  },
+  {
+    "prId": "PR-007",
+    "prNumber": 7,
+    "prTitle": "Delete checkout-rewrite.ts to test delete-only PR review",
+    "decision": "escalate",
+    "weightedScore": 0,
+    "hitRules": [],
+    "highRiskHit": false,
+    "dualModelUsed": true,
+    "humanOverridden": false,
+    "timestamp": "2026-07-31T13:06:21.496Z"
   }
 ]
