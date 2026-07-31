@@ -203,33 +203,15 @@ ${diffText}
 name: Codex-reviewer 双审复核
 trigger: ${trigger}
 pr: ${pr.metadata.id}
-primaryModel: deepseek-chat (${primaryVerdict.decision})
-secondaryModel: deepseek-reasoner (${secondaryVerdict.decision})
-consistent: ${consistent}
 ---
 
 ## PR Diff
 
 ${diffText}
 
-## 双审结果
-
-| 模型 | 判定 | 正确性 | 可读性 | 可维护性 | 可演进性 |
-|---|---|---|---|---|---|
-| deepseek-chat (主审) | ${primaryVerdict.decision} | ${primaryReview.dimensionScores.find(ds => ds.dimension === "correctness")?.score ?? "-"} | ${primaryReview.dimensionScores.find(ds => ds.dimension === "readability")?.score ?? "-"} | ${primaryReview.dimensionScores.find(ds => ds.dimension === "maintainability")?.score ?? "-"} | ${primaryReview.dimensionScores.find(ds => ds.dimension === "evolvability")?.score ?? "-"} |
-| deepseek-reasoner (复审) | ${secondaryVerdict.decision} | ${secondaryReview.dimensionScores.find(ds => ds.dimension === "correctness")?.score ?? "-"} | ${secondaryReview.dimensionScores.find(ds => ds.dimension === "readability")?.score ?? "-"} | ${secondaryReview.dimensionScores.find(ds => ds.dimension === "maintainability")?.score ?? "-"} | ${secondaryReview.dimensionScores.find(ds => ds.dimension === "evolvability")?.score ?? "-"} |
-
-## 主审发现
-
-${primaryReview.dimensionScores.flatMap(ds => ds.findings).map(f => `- **${f.severity}** [${f.dimension}] \`[${f.file}${f.line ? ":" + f.line : ""}]\`: ${f.summary}`).join("\n") || "无"}
-
-## 复审发现
-
-${secondaryReview.dimensionScores.flatMap(ds => ds.findings).map(f => `- **${f.severity}** [${f.dimension}] \`[${f.file}${f.line ? ":" + f.line : ""}]\`: ${f.summary}`).join("\n") || "无"}
-
 ## 任务
 
-请作为 Codex-reviewer，对以上 Diff 做正确性深度检查，特别关注两个模型结论${consistent ? "一致" : "不一致"}的情况：
+请作为 Codex-reviewer，对以上 Diff 做正确性深度检查：
 
 | 类别 | 找什么 |
 |---|---|
