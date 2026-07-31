@@ -336,6 +336,43 @@ server.registerTool(
   }
 );
 
+// --- Tool 6: check_test_deletion ---
+
+server.registerTool(
+  "check_test_deletion",
+  {
+    description: "检查是否删除测试文件但未在 PR 描述中说明替代覆盖（TEST-002）",
+    inputSchema: {
+      deleted_test_files: z.array(z.string()).describe("被删除的测试文件列表（匹配 *.test.ts、*.spec.ts、*Test.java 等）"),
+      pr_description: z.string().optional().describe("PR 描述内容"),
+    },
+  },
+  async (args) => {
+    const { deleted_test_files, pr_description } = args;
+    const hits: Array<{ id: string; file: string; detail: string }> = [];
+
+    if (deleted_test_files.length > 0) {
+      const hasExplanation = pr_description && /替代|覆盖|补充|迁移|已废弃/i.test(pr_description);
+      if (!hasExplanation) {
+        for (const f of deleted_test_files) {
+          hits.push({
+            id: "TEST-002",
+            file: f,
+            detail: `删除了测试文件 "${f}" 但未在 PR 描述中说明替代覆盖方案。删除测试必须在 PR 描述中说明替代覆盖，否则打回。`,
+          });
+        }
+      }
+    }
+
+    if (hits.length === 0) {
+      return { content: [{ type: "text", text: "✅ 通过: 未删除测试文件或已说明替代覆盖。" }] };
+    }
+
+    const text = hits.map(h => `- **🔴 ${h.id}** [${h.file}]: ${h.detail}`).join("\n");
+    return { content: [{ type: "text", text: `命中 ${hits.length} 条测试规则:\n${text}` }] };
+  }
+);
+
 // ═══════════════════════════════════════════════════════════
 // 启动
 // ═══════════════════════════════════════════════════════════
