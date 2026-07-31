@@ -20,7 +20,7 @@
     "hitRules": [],
     "highRiskHit": false,
     "dualModelUsed": true,
-    "humanOverridden": false,
+    "humanOverridden": true,
     "timestamp": "2026-07-29T13:21:00.989Z"
   },
   {
@@ -72,5 +72,19 @@
     "dualModelUsed": false,
     "humanOverridden": false,
     "timestamp": "2026-07-29T15:49:12.043Z"
+  },
+  {
+    "prId": "PR-005",
+    "prNumber": 5,
+    "prTitle": "Add test3.ts with 600 lines of business code",
+    "decision": "reject",
+    "weightedScore": 0,
+    "hitRules": [
+      "SCOPE-001"
+    ],
+    "highRiskHit": true,
+    "dualModelUsed": false,
+    "humanOverridden": false,
+    "timestamp": "2026-07-30T13:33:41.101Z"
   }
 ]
