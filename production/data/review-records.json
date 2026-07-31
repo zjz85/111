@@ -72,5 +72,55 @@
     "dualModelUsed": false,
     "humanOverridden": false,
     "timestamp": "2026-07-29T15:49:12.043Z"
+  },
+  {
+    "prId": "PR-008",
+    "prNumber": 8,
+    "prTitle": "Test/delete test file",
+    "decision": "reject",
+    "weightedScore": 0,
+    "hitRules": [
+      "TEST-002"
+    ],
+    "highRiskHit": false,
+    "dualModelUsed": false,
+    "humanOverridden": false,
+    "timestamp": "2026-07-31T13:11:49.963Z"
+  },
+  {
+    "prId": "PR-009",
+    "prNumber": 9,
+    "prTitle": "Test dual-model trigger with payment keywords",
+    "decision": "escalate",
+    "weightedScore": 3.35,
+    "hitRules": [],
+    "highRiskHit": false,
+    "dualModelUsed": true,
+    "humanOverridden": false,
+    "timestamp": "2026-07-31T14:59:30.509Z"
+  },
+  {
+    "prId": "PR-009",
+    "prNumber": 9,
+    "prTitle": "Test dual-model trigger with payment keywords",
+    "decision": "escalate",
+    "weightedScore": 3.35,
+    "hitRules": [],
+    "highRiskHit": false,
+    "dualModelUsed": true,
+    "humanOverridden": false,
+    "timestamp": "2026-07-31T15:04:15.770Z"
+  },
+  {
+    "prId": "PR-009",
+    "prNumber": 9,
+    "prTitle": "Test dual-model trigger with payment keywords",
+    "decision": "escalate",
+    "weightedScore": 3,
+    "hitRules": [],
+    "highRiskHit": false,
+    "dualModelUsed": true,
+    "humanOverridden": false,
+    "timestamp": "2026-07-31T15:12:57.453Z"
   }
 ]
