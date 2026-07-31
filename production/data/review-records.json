@@ -72,5 +72,17 @@
     "dualModelUsed": false,
     "humanOverridden": false,
     "timestamp": "2026-07-29T15:49:12.043Z"
+  },
+  {
+    "prId": "PR-010",
+    "prNumber": 10,
+    "prTitle": "Add dual-model Codex-review file generation with trimmed content",
+    "decision": "escalate",
+    "weightedScore": 3.35,
+    "hitRules": [],
+    "highRiskHit": false,
+    "dualModelUsed": true,
+    "humanOverridden": false,
+    "timestamp": "2026-07-31T15:21:06.475Z"
   }
 ]
