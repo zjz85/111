@@ -98,5 +98,17 @@
     "dualModelUsed": true,
     "humanOverridden": false,
     "timestamp": "2026-07-31T14:59:30.509Z"
+  },
+  {
+    "prId": "PR-009",
+    "prNumber": 9,
+    "prTitle": "Test dual-model trigger with payment keywords",
+    "decision": "escalate",
+    "weightedScore": 3.35,
+    "hitRules": [],
+    "highRiskHit": false,
+    "dualModelUsed": true,
+    "humanOverridden": false,
+    "timestamp": "2026-07-31T15:04:15.770Z"
   }
 ]
