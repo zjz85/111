@@ -72,5 +72,20 @@
     "dualModelUsed": false,
     "humanOverridden": false,
     "timestamp": "2026-07-29T15:49:12.043Z"
+  },
+  {
+    "prId": "PR-006",
+    "prNumber": 6,
+    "prTitle": "Add controller-db.ts to test ARCH-001 rejection",
+    "decision": "reject",
+    "weightedScore": 0,
+    "hitRules": [
+      "ARCH-001",
+      "SEC-002"
+    ],
+    "highRiskHit": true,
+    "dualModelUsed": false,
+    "humanOverridden": false,
+    "timestamp": "2026-07-31T12:52:46.499Z"
   }
 ]
