@@ -195,6 +195,66 @@ ${diffText}
 
     saveDualModelRecord(dualRecord);
 
+    // 双审时也生成 Codex-reviewer 文件，方便人工拿给第三方 AI 交叉验证
+    const codexDir = path.join(process.cwd(), "..", "..", "..", "multi-model-log");
+    fs.mkdirSync(codexDir, { recursive: true });
+    const diffText = pr.diffChunks.map(c => c.content).join("\n\n");
+    const codexContent = `---
+name: Codex-reviewer 双审复核
+trigger: ${trigger}
+pr: ${pr.metadata.id}
+primaryModel: deepseek-chat (${primaryVerdict.decision})
+secondaryModel: deepseek-reasoner (${secondaryVerdict.decision})
+consistent: ${consistent}
+---
+
+## PR Diff
+
+${diffText}
+
+## 双审结果
+
+| 模型 | 判定 | 正确性 | 可读性 | 可维护性 | 可演进性 |
+|---|---|---|---|---|---|
+| deepseek-chat (主审) | ${primaryVerdict.decision} | ${primaryReview.dimensionScores.find(ds => ds.dimension === "correctness")?.score ?? "-"} | ${primaryReview.dimensionScores.find(ds => ds.dimension === "readability")?.score ?? "-"} | ${primaryReview.dimensionScores.find(ds => ds.dimension === "maintainability")?.score ?? "-"} | ${primaryReview.dimensionScores.find(ds => ds.dimension === "evolvability")?.score ?? "-"} |
+| deepseek-reasoner (复审) | ${secondaryVerdict.decision} | ${secondaryReview.dimensionScores.find(ds => ds.dimension === "correctness")?.score ?? "-"} | ${secondaryReview.dimensionScores.find(ds => ds.dimension === "readability")?.score ?? "-"} | ${secondaryReview.dimensionScores.find(ds => ds.dimension === "maintainability")?.score ?? "-"} | ${secondaryReview.dimensionScores.find(ds => ds.dimension === "evolvability")?.score ?? "-"} |
+
+## 主审发现
+
+${primaryReview.dimensionScores.flatMap(ds => ds.findings).map(f => `- **${f.severity}** [${f.dimension}] \`[${f.file}${f.line ? ":" + f.line : ""}]\`: ${f.summary}`).join("\n") || "无"}
+
+## 复审发现
+
+${secondaryReview.dimensionScores.flatMap(ds => ds.findings).map(f => `- **${f.severity}** [${f.dimension}] \`[${f.file}${f.line ? ":" + f.line : ""}]\`: ${f.summary}`).join("\n") || "无"}
+
+## 任务
+
+请作为 Codex-reviewer，对以上 Diff 做正确性深度检查，特别关注两个模型结论${consistent ? "一致" : "不一致"}的情况：
+
+| 类别 | 找什么 |
+|---|---|
+| SQL 注入 | 用户输入直接拼到 SQL 查询里 |
+| 空指针 / 未定义 | 没检查 null/undefined 就直接用 |
+| 逻辑错误 | 条件写反、循环不对、返回值错 |
+| 竞态条件 | 并发读写共享变量 |
+| 边界情况 | 空数组、0、空字符串、超大值 |
+| 语法错误 | 少括号、引用不存在的变量 |
+| 异常处理 | try-catch 吞错误 |
+
+## 输出格式
+
+| 定位 | 问题 | 规范引用 | 危害说明 | 严重等级 |
+|---|---|---|---|---|
+| \`[文件，行]\` | 说明 | 规范ID | 危害 | 打回/建议 |
+
+## Codex 报告回存位置
+
+评审完成后，将结果 Markdown 保存到：\`${codexDir}/${pr.metadata.id}-codex-review-report.md\`
+`;
+    const codexFile = path.join(codexDir, `${pr.metadata.id}-codex-review.md`);
+    fs.writeFileSync(codexFile, codexContent, "utf-8");
+    console.log(`[DualModel] Codex-reviewer 双审复核文件已生成: ${codexFile}`);
+
     if (!consistent) {
       finalVerdict = {
         ...primaryVerdict,
