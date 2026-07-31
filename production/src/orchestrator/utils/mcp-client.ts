@@ -67,6 +67,16 @@ export class McpClient {
     });
   }
 
+  async checkTestDeletion(params: {
+    deletedTestFiles: string[];
+    prDescription?: string;
+  }): Promise<McpCheckResult> {
+    return this.callTool("check_test_deletion", {
+      deleted_test_files: params.deletedTestFiles,
+      pr_description: params.prDescription,
+    });
+  }
+
   async disconnect(): Promise<void> {
     await this.client?.close();
   }
