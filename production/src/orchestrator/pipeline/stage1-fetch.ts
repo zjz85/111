@@ -139,6 +139,20 @@ async function processPR(input: {
 
     const security = await mcp.checkSecurity({ diffContent: diffText });
     mcpResults.push(security);
+
+    // 检测删除的测试文件
+    const testPattern = /\.(test|spec)\.(ts|tsx|js|jsx|java|py|go)$/;
+    const deletedTestFiles = metadata.changedFiles.filter(f => {
+      const inDiff = diffText.includes(`--- a/${f}`) && !diffText.includes(`+++ b/${f}`);
+      return testPattern.test(f) && inDiff;
+    });
+    if (deletedTestFiles.length > 0) {
+      const testDeletion = await mcp.checkTestDeletion({
+        deletedTestFiles,
+        prDescription,
+      });
+      mcpResults.push(testDeletion);
+    }
   } finally {
     await mcp.disconnect();
   }
