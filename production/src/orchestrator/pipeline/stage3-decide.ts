@@ -85,11 +85,11 @@ export function decide(pr: PreprocessedPR, review: ReviewResult): Verdict {
   if (rejectReasons.length > 0) {
     decision = "reject";
     reason = rejectReasons.join("；");
-  } else if (uncertainReasons.length > 0 || weightedScore < 3.0) {
+  } else if (uncertainReasons.length > 0 || weightedScore < 3.5) {
     decision = "escalate";
     reason = uncertainReasons.length > 0
       ? uncertainReasons.join("；")
-      : `加权总分 ${weightedScore.toFixed(2)} 低于 3.0，转人工判断`;
+      : `加权总分 ${weightedScore.toFixed(2)} 低于 3.5，转人工判断`;
   } else {
     decision = "pass";
     reason = `加权总分 ${weightedScore.toFixed(2)}，所有维度通过`;
