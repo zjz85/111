@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "review": "npx tsx index.ts",
-    "build": "npx tsc"
+    "build": "npx tsc",
+    "test": "vitest run"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
@@ -15,6 +16,7 @@
   "devDependencies": {
     "@types/node": "^26.1.2",
     "tsx": "^4.23.1",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
   }
 }
