@@ -78,16 +78,18 @@ jobs:
               console.log("未找到报告或日志文件，跳过");
             }
 
-      - name: 提交 rejected 记录到仓库
+      - name: 提交评审产物到仓库
         if: always()
         run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           if [ -d "rejected" ] && [ "$(ls -A rejected 2>/dev/null)" ]; then
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
             git add rejected/
-            git commit -m "Add rejected record for PR #${{ github.event.pull_request.number }}" || true
-            git push
-            echo "rejected 记录已提交到仓库"
-          else
-            echo "无 rejected 文件，跳过"
           fi
+          git add production/data/review-records.json production/data/dual-model-records.json
+          if [ -d "multi-model-log" ] && [ "$(ls -A multi-model-log 2>/dev/null)" ]; then
+            git add multi-model-log/
+          fi
+          git diff --cached --quiet || git commit -m "Add review artifacts for PR #${{ github.event.pull_request.number }}"
+          git push
+          echo "评审产物已提交到仓库"
