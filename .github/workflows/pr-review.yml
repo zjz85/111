@@ -113,8 +113,10 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          # git add 后检查是否有任何暂存内容（含新增 untracked 文件），避免"Everything up-to-date"漏提交
-          git add -A production/data/review-records.json rejected/ misrate-alert.txt 2>/dev/null || true
+          # 分别 add 各路径，某个路径不存在不影响其他路径（避免 -A + 多路径整体失败）
+          git add production/data/review-records.json 2>/dev/null || true
+          git add rejected/ 2>/dev/null || true
+          git add misrate-alert.txt 2>/dev/null || true
           if [ -n "$(git diff --cached --name-only)" ]; then
             git commit -m "Add review artifacts for PR #${{ github.event.pull_request.number }}"
             git pull --rebase || true
