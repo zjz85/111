@@ -38,7 +38,7 @@ ${prText}
 
 请先查阅相关规范（query_rule），然后对变更做四维评审，按 JSON 格式输出结果。`;
   const { text: reviewText } = await runAgent(
-    { model, systemPrompt: REVIEWER_SYSTEM_PROMPT, tools: REVIEWER_TOOLS },
+    { model, systemPrompt: REVIEWER_SYSTEM_PROMPT, tools: REVIEWER_TOOLS, maxTokens: 12000 },
     reviewerTools,
     reviewInput,
   );
@@ -56,7 +56,7 @@ ${reviewText}
 
 请综合以上信息，做出最终判定并生成报告。可以调用 read_records 查看历史评审记录。`;
   const { text: verdictText } = await runAgent(
-    { model, systemPrompt: DECIDER_SYSTEM_PROMPT, tools: DECIDER_TOOLS },
+    { model, systemPrompt: DECIDER_SYSTEM_PROMPT, tools: DECIDER_TOOLS, maxTokens: 12000 },
     deciderTools,
     verifyInput,
   );
