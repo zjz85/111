@@ -49,3 +49,12 @@ export function maskPhoneNumber(input: string): string {
   if (!isValidPhoneNumber(trimmed)) return input;
   return `${trimmed.slice(0, 3)}****${trimmed.slice(-4)}`;
 }
+
+/**
+ * 手机号脱敏结果
+ */
+export type PhoneMaskResult = {
+  masked: string;
+  valid: boolean;
+  originalLength: number;
+};
