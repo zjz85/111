@@ -25,9 +25,14 @@ export class McpClient {
 
   async connect(): Promise<void> {
     const isCI = !!process.env.GITHUB_ACTIONS;
+    // StdioClientTransport 默认只继承白名单 env，需显式传入 RULES_DIR 等自定义变量
+    const env: Record<string, string> = {
+      ...(process.env as Record<string, string>),
+    };
     this.transport = new StdioClientTransport({
       command: isCI ? "node" : "npx",
       args: isCI ? [SERVER_ENTRY] : ["tsx", SERVER_ENTRY],
+      env,
     });
 
     this.client = new Client(

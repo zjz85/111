@@ -26,6 +26,8 @@ async function getClient(): Promise<Client> {
   const transport = new StdioClientTransport({
     command: isCI ? "node" : "npx",
     args: isCI ? [serverEntry] : ["tsx", serverEntry],
+    // 显式传全量 env，保证 RULES_DIR / GITHUB_WORKSPACE 等传给 MCP server 子进程
+    env: { ...(process.env as Record<string, string>) },
   });
 
   client = new Client({ name: "reviewer-agent", version: "1.0.0" }, { capabilities: {} });
