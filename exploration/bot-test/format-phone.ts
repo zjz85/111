@@ -31,3 +31,31 @@ export function formatPhoneNumber(input: string): FormatResult {
     data: `+86${trimmed}`,
   };
 }
+
+/**
+ * 校验手机号是否有效（11 位中国大陆手机号）
+ */
+export function isValidPhoneNumber(input: string): boolean {
+  if (!input) return false;
+  const phonePattern = /^1[3-9]\d{9}$/;
+  return phonePattern.test(input.trim());
+}
+
+/**
+ * 脱敏手机号（保留前 3 后 4）
+ */
+export function maskPhoneNumber(input: string): string {
+  const trimmed = input.trim();
+  if (!isValidPhoneNumber(trimmed)) return input;
+  return `${trimmed.slice(0, 3)}****${trimmed.slice(-4)}`;
+}
+
+/**
+ * 手机号脱敏结果
+ */
+export type PhoneMaskResult = {
+  masked: string;
+  valid: boolean;
+  originalLength: number;
+};
+// 触发重新评审
