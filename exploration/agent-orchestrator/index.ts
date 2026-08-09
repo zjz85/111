@@ -130,7 +130,12 @@ ${reviewText}
   }
 }
 
-main().catch(err => {
-  console.error("Agent 编排失败:", err);
-  process.exit(1);
-});
+main()
+  .then(() => {
+    // 显式退出，释放 MCP client / HTTP 等未关闭句柄，避免进程挂起导致 CI 卡住
+    process.exit(0);
+  })
+  .catch(err => {
+    console.error("Agent 编排失败:", err);
+    process.exit(1);
+  });
