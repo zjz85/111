@@ -108,5 +108,17 @@
     "dualModelUsed": false,
     "humanOverridden": false,
     "timestamp": "2026-08-09T14:07:00.658Z"
+  },
+  {
+    "prId": "PR-022",
+    "prNumber": 22,
+    "prTitle": "Migrate agent-orchestrator to production + mcp-server to root",
+    "decision": "reject",
+    "weightedScore": 0,
+    "hitRules": [],
+    "highRiskHit": false,
+    "dualModelUsed": false,
+    "humanOverridden": false,
+    "timestamp": "2026-08-09T14:41:41.014Z"
   }
 ]
