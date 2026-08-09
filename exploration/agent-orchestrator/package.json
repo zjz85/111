@@ -1,17 +1,16 @@
 {
-  "name": "pr-review-orchestrator",
-  "version": "1.0.0",
-  "description": "PR自动初评机器人 - 评审编排器",
-  "main": "index.ts",
+  "name": "agent-orchestrator",
+  "version": "0.1.0",
+  "description": "PR评审 Agent SDK 编排器（探索区）",
   "type": "module",
+  "main": "index.ts",
   "scripts": {
     "review": "npx tsx index.ts",
-    "build": "npx tsc",
     "test": "vitest run"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.30.0",
-    "openai": "^4.0.0"
+    "@anthropic-ai/sdk": "^0.60.0",
+    "@modelcontextprotocol/sdk": "^1.30.0"
   },
   "devDependencies": {
     "@types/node": "^26.1.2",

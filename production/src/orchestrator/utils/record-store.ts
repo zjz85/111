@@ -2,7 +2,9 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import type { ReviewRecord } from "../../shared/types.js";
 
-const DATA_DIR = path.join(process.env.GITHUB_ACTIONS ? process.cwd() : "e:\\大作业\\pr自动初评机器人\\production", "data");
+const DATA_DIR = process.env.GITHUB_ACTIONS
+  ? path.join(process.env.GITHUB_WORKSPACE!, "production", "data")
+  : path.join("e:\\大作业\\pr自动初评机器人\\production", "data");
 const RECORDS_FILE = path.join(DATA_DIR, "review-records.json");
 
 /**
@@ -49,15 +51,17 @@ export function markOverridden(prId: string): void {
 
 /**
  * 计算误判率
- * misrate = 被推翻的打回 / 总打回数
+ * misrate = 被推翻的打回 / (通过数 + 打回数)
  */
-export function calcMisrate(): { rate: number; totalRejected: number; overridden: number } {
+export function calcMisrate(): { rate: number; totalDecided: number; overridden: number } {
   const records = loadRecords();
   const rejected = records.filter(r => r.decision === "reject");
+  const passed = records.filter(r => r.decision === "pass");
   const overridden = rejected.filter(r => r.humanOverridden);
+  const denominator = passed.length + rejected.length;
   return {
-    rate: rejected.length > 0 ? overridden.length / rejected.length : 0,
-    totalRejected: rejected.length,
+    rate: denominator > 0 ? overridden.length / denominator : 0,
+    totalDecided: denominator,
     overridden: overridden.length,
   };
 }
@@ -66,9 +70,9 @@ export function calcMisrate(): { rate: number; totalRejected: number; overridden
  * 误判率告警检查，超过阈值返回告警信息
  */
 export function checkMisrateAlert(threshold = 0.15): string | null {
-  const { rate, totalRejected, overridden } = calcMisrate();
-  if (totalRejected >= 5 && rate > threshold) {
-    return `⚠️ 误判率告警：${(rate * 100).toFixed(1)}%（${overridden}/${totalRejected}）超过 ${(threshold * 100).toFixed(0)}% 阈值，建议检查规则配置。`;
+  const { rate, totalDecided, overridden } = calcMisrate();
+  if (totalDecided >= 5 && rate > threshold) {
+    return `⚠️ 误判率告警：${(rate * 100).toFixed(1)}%（${overridden}/${totalDecided}）超过 ${(threshold * 100).toFixed(0)}% 阈值，建议检查规则配置。`;
   }
   return null;
 }

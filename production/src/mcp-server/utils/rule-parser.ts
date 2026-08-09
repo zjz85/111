@@ -70,15 +70,14 @@ export function parseRuleFile(filePath: string): { category: string; rules: Rule
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i] ?? "";
 
-    if (line.startsWith("# ") && i === 0) {
-      category = line.replace(/^# /, "").trim();
+    // 跳过文件头顶的 version 注释行（前 3 行内）
+    if ((line.trim().startsWith("<!--") || line.trim().endsWith("-->")) && i <= 3) {
       continue;
     }
 
-    // 跳过文件头顶的 version 注释行
-    if (line.trim().startsWith("<!--") || line.trim().endsWith("-->")) {
-      // 只跳过第 1-3 行的注释行
-      if (i <= 3) continue;
+    if (line.startsWith("# ") && !category) {
+      category = line.replace(/^# /, "").trim();
+      continue;
     }
 
     if (/^## RULE-/.test(line)) {
