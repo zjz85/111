@@ -5,6 +5,8 @@
  */
 
 import { runAgent } from "./utils/agent-loop.js";
+import * as fs from "node:fs";
+import * as path from "node:path";
 import { IMPLEMENTER_SYSTEM_PROMPT, IMPLEMENTER_TOOLS, implementerTools } from "./agents/implementer.js";
 import { REVIEWER_SYSTEM_PROMPT, REVIEWER_TOOLS, reviewerTools } from "./agents/reviewer.js";
 import { DECIDER_SYSTEM_PROMPT, DECIDER_TOOLS, deciderTools } from "./agents/decider.js";
@@ -24,6 +26,39 @@ function normalizePrId(raw: string): string {
 }
 const normalizedPrId = normalizePrId(prId);
 
+/** SCOPE-001 快速通道报告：直接打回并要求拆分，不做评审分析 */
+function buildScopeReport(prId: string, effectiveAddedLines: number): string {
+  const threshold = 500;
+  return [
+    `# PR 自动初审报告 — ${prId}（有效行数超限）`,
+    ``,
+    `| 元信息 | 值 |`,
+    `|---|---|`,
+    `| PR 编号 | ${prId} |`,
+    `| 判定 | ❌ 打回 |`,
+    `| 触发规则 | SCOPE-001 |`,
+    `| 有效行数 | ${effectiveAddedLines}（阈值 ${threshold}） |`,
+    ``,
+    `## 规范检查`,
+    ``,
+    `| 检查项 | 结果 | 说明 |`,
+    `|---|---|---|`,
+    `| check_complexity | ❌ 拒绝 | SCOPE-001：有效行数 ${effectiveAddedLines} 超过 ${threshold} 行阈值，应拆分为多个小型 PR |`,
+    ``,
+    `## 最终判定`,
+    ``,
+    `**❌ 打回**：有效行数 ${effectiveAddedLines} 超过 ${threshold} 行阈值（SCOPE-001），要求拆分。`,
+    ``,
+    `## 拆分要求`,
+    ``,
+    `- 将本次变更拆分为多个小型 PR，每个 PR 有效行数控制在 ${threshold} 行以内`,
+    `- 按功能模块分组提交，避免一次性堆叠大量代码`,
+    `- 拆分后逐个提交评审，验证每个小 PR 通过后再合并`,
+    ``,
+    `*报告生成时间：${new Date().toISOString()} | 评审引擎：SCOPE-001 快速通道*`,
+  ].join("\n");
+}
+
 async function main() {
   const model = "deepseek-v4-flash";
 
@@ -35,6 +70,46 @@ async function main() {
     `请分析 PR: ${prId}`,
   );
   console.log(`  实施 Agent 完成 (${prText.length} 字符)`);
+
+  // ──── Stage 1.5: 有效行数快速通道 ────
+  // SCOPE-001 硬阈值：有效行数超 500 直接打回并要求拆分，跳过四维评审与决策分析
+  const sizeJson = prText.match(/\{[^]*?"effectiveAddedLines"\s*:\s*(\d+)[^]*\}/);
+  if (sizeJson) {
+    const effectiveAddedLines = parseInt(sizeJson[1], 10);
+    if (effectiveAddedLines > 500) {
+      console.log(`[FastPath] 有效行数 ${effectiveAddedLines} > 500，直接打回（SCOPE-001）`);
+      const scopeReport = buildScopeReport(normalizedPrId, effectiveAddedLines);
+      console.log(`[FastPath] 输出打回报告`);
+      fs.writeFileSync("report.md", scopeReport, "utf-8");
+      console.log(`[Report] 报告已写入: report.md`);
+
+      appendRecord({
+        prId: normalizedPrId,
+        prNumber: parseInt(prId.replace(/\D/g, ""), 10) || 0,
+        prTitle: "PR 自动初审",
+        decision: "reject",
+        weightedScore: 0,
+        hitRules: ["SCOPE-001"],
+        highRiskHit: false,
+        dualModelUsed: false,
+        humanOverridden: false,
+        timestamp: new Date().toISOString(),
+      });
+      console.log(`[Record] 评审记录已写入: decision=reject, hitRules=SCOPE-001`);
+
+      const rejectedDir = process.env.GITHUB_ACTIONS
+        ? path.join(process.env.GITHUB_WORKSPACE!, "rejected")
+        : path.resolve(import.meta.dirname, "..", "..", "rejected");
+      fs.mkdirSync(rejectedDir, { recursive: true });
+      const rejectedPath = path.join(rejectedDir, `${normalizedPrId}.md`);
+      fs.writeFileSync(rejectedPath, scopeReport, "utf-8");
+      console.log(`[Rejected] 打回记录已写入: ${rejectedPath}`);
+      return;
+    }
+    console.log(`[FastPath] 有效行数 ${effectiveAddedLines} ≤ 500，继续完整评审`);
+  } else {
+    console.log(`[FastPath] 未从实施 Agent 输出解析出 effectiveAddedLines，继续完整评审`);
+  }
 
   // ──── Stage 2: 评审 Agent ────
   console.log("[Agent 2/3] 评审 Agent 四维评审...");
@@ -87,8 +162,6 @@ ${reviewText}
   console.log(reportBody);
 
   // 写 report.md（只写报告正文，不写外层 JSON 壳）
-  const fs = await import("node:fs");
-  const path = await import("node:path");
   const reportPath = "report.md";
   fs.writeFileSync(reportPath, reportBody, "utf-8");
   console.log(`\n[Report] 报告已写入: ${reportPath}`);
