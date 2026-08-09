@@ -117,6 +117,7 @@ jobs:
           git add production/data/review-records.json 2>/dev/null || true
           git add rejected/ 2>/dev/null || true
           git add misrate-alert.txt 2>/dev/null || true
+          git add multi-model-log/ 2>/dev/null || true
           if [ -n "$(git diff --cached --name-only)" ]; then
             git commit -m "Add review artifacts for PR #${{ github.event.pull_request.number }}"
             git pull --rebase || true

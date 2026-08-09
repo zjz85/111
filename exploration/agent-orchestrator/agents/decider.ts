@@ -26,7 +26,7 @@ function loadSystemPrompt(): string {
     ``,
     `## 可用工具`,
     ``,
-    `- **codex_review**：当 PreprocessedPR.highRiskHit 为 true 或评审 Agent 发现严重正确性问题时，调用此工具进行高风险代码的 7 类正确性深度检查（SQL 注入/空指针/逻辑错误/竞态条件/边界情况/语法错误/异常处理）。输入 highRiskTypes、prDescription 和 diffContent。**diffContent 必填**：从实施 Agent 提供的 PreprocessedPR 中提取完整 diff 原文传入，不得省略或替换。`,
+    `- **codex_review**：当 PreprocessedPR.highRiskHit 为 true 或评审 Agent 发现严重正确性问题时，调用此工具进行高风险代码的 7 类正确性深度检查（SQL 注入/空指针/逻辑错误/竞态条件/边界情况/语法错误/异常处理）。输入 prId（取 PreprocessedPR.metadata.id）、highRiskTypes、prDescription 和 diffContent。**diffContent 必填**：从实施 Agent 提供的 PreprocessedPR 中提取完整 diff 原文传入，不得省略或替换。`,
     `- **read_records**：读取历史评审记录，查看误判趋势和同类 PR 的处理结果。`,
     ``,
     `## 判定规则`,
@@ -92,11 +92,12 @@ export const DECIDER_TOOLS: Tool[] = [
     input_schema: {
       type: "object" as const,
       properties: {
+        prId: { type: "string", description: "PR 编号，如 'PR-002'，用于记录复审报告到 multi-model-log/" },
         highRiskTypes: { type: "string", description: "高风险类型，逗号分隔，如 'db_operation,core_interface'" },
         prDescription: { type: "string", description: "PR 描述" },
         diffContent: { type: "string", description: "PR Diff 全文，从实施 Agent 提供的 PreprocessedPR 中提取，必须原样传入" },
       },
-      required: ["highRiskTypes", "diffContent"],
+      required: ["prId", "highRiskTypes", "diffContent"],
     },
   },
   {
@@ -112,6 +113,7 @@ export const DECIDER_TOOLS: Tool[] = [
 
 export const deciderTools: ToolExecutor = {
   codex_review: async (input) => {
+    const prId = String(input.prId ?? "");
     const highRiskTypesStr = String(input.highRiskTypes ?? "");
     const prDescription = String(input.prDescription ?? "");
     const diffContent = String(input.diffContent ?? "");
@@ -129,6 +131,23 @@ export const deciderTools: ToolExecutor = {
       {},
       codexInput,
     );
+
+    // 双模型评审：把 Codex 复审报告落盘到 multi-model-log/
+    if (prId && text) {
+      try {
+        const logDir = process.env.GITHUB_ACTIONS
+          ? path.join(process.env.GITHUB_WORKSPACE!, "multi-model-log")
+          : path.resolve(import.meta.dirname, "..", "..", "..", "multi-model-log");
+        fs.mkdirSync(logDir, { recursive: true });
+        const reportPath = path.join(logDir, `${prId}-codex-review-report.md`);
+        const report = `---\nname: Codex-reviewer 复审报告\npr: ${prId}\nreviewer: Codex CLI (DeepSeek)\nreview_time: ${new Date().toISOString().slice(0, 10)}\n---\n\n${text}`;
+        fs.writeFileSync(reportPath, report, "utf-8");
+        console.log(`[MultiModel] Codex 复审报告已写入: ${reportPath}`);
+      } catch (err) {
+        console.error(`[MultiModel] 写入 Codex 复审报告失败: ${String(err)}`);
+      }
+    }
+
     return text;
   },
 
