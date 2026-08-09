@@ -9,12 +9,12 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import type { Tool } from "@anthropic-ai/sdk/resources/messages/messages.mjs";
 import type { ToolExecutor } from "../utils/agent-loop.js";
-import { loadRecords } from "../../../production/src/orchestrator/utils/record-store.js";
+import { loadRecords } from "../../orchestrator/utils/record-store.js";
 import { runAgent } from "../utils/agent-loop.js";
 import { CODEX_SYSTEM_PROMPT, CODEX_TOOLS, buildCodexInput } from "./codex-reviewer.js";
 
 const FORMAT_SKILL_PATH = path.resolve(
-  import.meta.dirname, "..", "..", "..", ".claude", "skills", "markdown-geshihua.md",
+  import.meta.dirname, "..", "..", "..", "..", ".claude", "skills", "markdown-geshihua.md",
 );
 
 /**

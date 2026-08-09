@@ -9,7 +9,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 
 const SKILL_PATH = path.resolve(
-  import.meta.dirname, "..", "..", "..", ".claude", "agents", "Codex-reviewer.md",
+  import.meta.dirname, "..", "..", "..", "..", ".claude", "agents", "Codex-reviewer.md",
 );
 
 function loadSystemPrompt(): string {

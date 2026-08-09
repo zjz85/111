@@ -7,11 +7,11 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { execSync } from "node:child_process";
-import { splitDiff, splitLargeChunks, effectiveAddedLines } from "../../../production/src/orchestrator/utils/diff-splitter.js";
-import { McpClient } from "../../../production/src/orchestrator/utils/mcp-client.js";
-import type { PRMetadata, PreprocessedPR, McpCheckResult } from "../../../production/src/shared/types.js";
+import { splitDiff, splitLargeChunks, effectiveAddedLines } from "../../orchestrator/utils/diff-splitter.js";
+import { McpClient } from "../../orchestrator/utils/mcp-client.js";
+import type { PRMetadata, PreprocessedPR, McpCheckResult } from "../../shared/types.js";
 
-const SAMPLE_PRS_DIR = path.resolve(import.meta.dirname, "..", "..", "..", "exploration", "sample-prs");
+const SAMPLE_PRS_DIR = path.resolve(import.meta.dirname, "..", "..", "..", "..", "exploration", "sample-prs");
 
 const HIGH_RISK_PATTERNS = [
   { type: "db_operation", pattern: /\b(PrismaClient|db\.|\.query\(|\.execute\(|raw|transaction|createConnection)\b/ },

@@ -8,7 +8,7 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "declaration": true,
-    "rootDir": "../../.."
+    "rootDir": ".."
   },
-  "include": ["**/*.ts", "../../production/src/shared/**/*.ts", "../../production/src/orchestrator/**/*.ts"]
+  "include": ["**/*.ts", "../shared/**/*.ts", "../orchestrator/**/*.ts"]
 }

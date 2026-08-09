@@ -3,7 +3,7 @@
     "pr-review-rules": {
       "type": "stdio",
       "command": "node",
-      "args": ["E:/大作业/pr自动初评机器人/production/src/mcp-server/dist/index.js"]
+      "args": ["E:/大作业/pr自动初评机器人/mcp-server/dist/index.js"]
     }
   }
 }
