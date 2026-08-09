@@ -41,4 +41,14 @@ export class UserController {
     });
     return orders;
   }
+
+  /**
+   * 按手机号搜索用户
+   */
+  async searchUserByPhone(phone: string) {
+    // ❌ ARCH-001 违规：Controller 直连数据库查询
+    // ❌ SEC-002 违规：外部输入 phone 未做格式验证，直接传入数据库查询
+    const user = await this.db.user.findFirst({ where: { phone } });
+    return user;
+  }
 }
