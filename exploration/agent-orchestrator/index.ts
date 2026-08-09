@@ -26,6 +26,26 @@ function normalizePrId(raw: string): string {
 }
 const normalizedPrId = normalizePrId(prId);
 
+/**
+ * 从实施 Agent 输出的 PreprocessedPR JSON 中提取审计字段
+ * 避免 appendRecord 硬编码 prTitle / highRiskHit 导致记录失真
+ */
+function extractPrMeta(prText: string): { prTitle: string; highRiskHit: boolean; highRiskTypes: string[] } {
+  const fallback = { prTitle: "PR 自动初审", highRiskHit: false, highRiskTypes: [] as string[] };
+  try {
+    const titleM = prText.match(/"title"\s*:\s*"([^"]*)"/);
+    const hitM = prText.match(/"highRiskHit"\s*:\s*(true|false)/);
+    const typesM = prText.match(/"highRiskTypes"\s*:\s*(\[[\s\S]*?\])/);
+    return {
+      prTitle: titleM?.[1] ?? fallback.prTitle,
+      highRiskHit: hitM?.[1] === "true" ? true : hitM?.[1] === "false" ? false : fallback.highRiskHit,
+      highRiskTypes: typesM ? JSON.parse(typesM[1]).map(String) : fallback.highRiskTypes,
+    };
+  } catch {
+    return fallback;
+  }
+}
+
 /** SCOPE-001 快速通道报告：直接打回并要求拆分，不做评审分析 */
 function buildScopeReport(prId: string, effectiveAddedLines: number): string {
   const threshold = 500;
@@ -71,6 +91,9 @@ async function main() {
   );
   console.log(`  实施 Agent 完成 (${prText.length} 字符)`);
 
+  // 提取审计字段（真实标题 / 高风险命中），供评审记录使用
+  const prMeta = extractPrMeta(prText);
+
   // ──── Stage 1.5: 有效行数快速通道 ────
   // SCOPE-001 硬阈值：有效行数超 500 直接打回并要求拆分，跳过四维评审与决策分析
   const sizeJson = prText.match(/\{[^]*?"effectiveAddedLines"\s*:\s*(\d+)[^]*\}/);
@@ -86,11 +109,11 @@ async function main() {
       appendRecord({
         prId: normalizedPrId,
         prNumber: parseInt(prId.replace(/\D/g, ""), 10) || 0,
-        prTitle: "PR 自动初审",
+        prTitle: prMeta.prTitle,
         decision: "reject",
         weightedScore: 0,
         hitRules: ["SCOPE-001"],
-        highRiskHit: false,
+        highRiskHit: prMeta.highRiskHit,
         dualModelUsed: false,
         humanOverridden: false,
         timestamp: new Date().toISOString(),
@@ -176,11 +199,11 @@ ${reviewText}
   appendRecord({
     prId: normalizedPrId,
     prNumber,
-    prTitle: "PR 自动初审",
+    prTitle: prMeta.prTitle,
     decision,
     weightedScore: 0,
     hitRules: [],
-    highRiskHit: false,
+    highRiskHit: prMeta.highRiskHit,
     dualModelUsed: false,
     humanOverridden: false,
     timestamp: new Date().toISOString(),

@@ -17,6 +17,26 @@ const FORMAT_SKILL_PATH = path.resolve(
   import.meta.dirname, "..", "..", "..", ".claude", "skills", "markdown-geshihua.md",
 );
 
+/**
+ * 去重 Codex 复审报告中的重复行（deepseek 输出表格时偶发同一行重复 N 次）
+ * 保留表头与唯一数据行，仅移除连续重复的表格行
+ */
+function dedupeCodexReport(text: string): string {
+  const lines = text.split("\n");
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const line of lines) {
+    // 只对表格数据行去重（以 | 开头且含 |）
+    if (line.trim().startsWith("|") && line.includes("|") && !/^\|?\s*---/.test(line.trim())) {
+      const key = line.trim();
+      if (seen.has(key)) continue;
+      seen.add(key);
+    }
+    out.push(line);
+  }
+  return out.join("\n");
+}
+
 function loadSystemPrompt(): string {
   const formatRaw = fs.readFileSync(FORMAT_SKILL_PATH, "utf-8");
   const formatBody = formatRaw.replace(/^---[\s\S]*?---\n*/, "").trim();
@@ -112,6 +132,7 @@ export const DECIDER_TOOLS: Tool[] = [
 
 export const deciderTools: ToolExecutor = {
   codex_review: async (input) => {
+    const prId = String(input.prId ?? "");
     const highRiskTypesStr = String(input.highRiskTypes ?? "");
     const prDescription = String(input.prDescription ?? "");
     const diffContent = String(input.diffContent ?? "");
@@ -129,6 +150,23 @@ export const deciderTools: ToolExecutor = {
       {},
       codexInput,
     );
+
+    // 双模型评审：把 Codex 复审报告落盘到 multi-model-log/
+    if (prId && text) {
+      try {
+        const logDir = process.env.GITHUB_ACTIONS
+          ? path.join(process.env.GITHUB_WORKSPACE!, "multi-model-log")
+          : path.resolve(import.meta.dirname, "..", "..", "..", "multi-model-log");
+        fs.mkdirSync(logDir, { recursive: true });
+        const reportPath = path.join(logDir, `${prId}-codex-review-report.md`);
+        const report = `---\nname: Codex-reviewer 复审报告\npr: ${prId}\nreviewer: Codex CLI (DeepSeek)\nreview_time: ${new Date().toISOString().slice(0, 10)}\n---\n\n${dedupeCodexReport(text)}`;
+        fs.writeFileSync(reportPath, report, "utf-8");
+        console.log(`[MultiModel] Codex 复审报告已写入: ${reportPath}`);
+      } catch (err) {
+        console.error(`[MultiModel] 写入 Codex 复审报告失败: ${String(err)}`);
+      }
+    }
+
     return text;
   },
 
