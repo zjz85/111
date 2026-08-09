@@ -94,7 +94,7 @@
     "hitRules": [],
     "highRiskHit": false,
     "dualModelUsed": false,
-    "humanOverridden": false,
+    "humanOverridden": true,
     "timestamp": "2026-08-09T13:26:25.929Z"
   }
 ]
