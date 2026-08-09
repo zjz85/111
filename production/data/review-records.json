@@ -96,5 +96,17 @@
     "dualModelUsed": false,
     "humanOverridden": false,
     "timestamp": "2026-08-09T13:43:47.896Z"
+  },
+  {
+    "prId": "PR-021",
+    "prNumber": 21,
+    "prTitle": "Fix review record accuracy and dedupe Codex reports",
+    "decision": "pass",
+    "weightedScore": 0,
+    "hitRules": [],
+    "highRiskHit": true,
+    "dualModelUsed": false,
+    "humanOverridden": false,
+    "timestamp": "2026-08-09T14:07:00.658Z"
   }
 ]
