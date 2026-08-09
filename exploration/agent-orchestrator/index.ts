@@ -121,11 +121,10 @@ ${reviewText}
     fs.writeFileSync("misrate-alert.txt", misrateAlert, "utf-8");
   }
 
-  // 打回记录：decision 为 reject（或报告正文含明确打回判定，兜底解析失败）必须写入 rejected/
-  // 注意避免误报："无 reject 项"、"未触发打回" 等字样不含明确判定词
+  // 打回记录：仅当决策明确为 reject 时写入 rejected/。
+  // 判定来源：parsedVerdict.decision，或报告正文中的精确判定 JSON（避免"未触发打回"等否定语境误报）
   const isReject = decision === "reject"
-    || /(打回|拒绝|判定.*reject|reject.*判定|❌.*拒绝)/i.test(reportBody.slice(0, 500))
-    || /"decision"\s*:\s*"reject"/i.test(reportBody.slice(0, 1000));
+    || /"decision"\s*:\s*"reject"/i.test(reportBody);
   if (isReject) {
     const rejectedDir = process.env.GITHUB_ACTIONS
       ? path.join(process.env.GITHUB_WORKSPACE!, "rejected")

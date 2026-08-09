@@ -113,11 +113,16 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add production/data/review-records.json rejected/ misrate-alert.txt 2>/dev/null || true
-          git diff --cached --quiet || git commit -m "Add review artifacts for PR #${{ github.event.pull_request.number }}"
-          git pull --rebase
-          git push
-          echo "评审产物已提交到仓库"
+          # git add 后检查是否有任何暂存内容（含新增 untracked 文件），避免"Everything up-to-date"漏提交
+          git add -A production/data/review-records.json rejected/ misrate-alert.txt 2>/dev/null || true
+          if [ -n "$(git diff --cached --name-only)" ]; then
+            git commit -m "Add review artifacts for PR #${{ github.event.pull_request.number }}"
+            git pull --rebase || true
+            git push
+            echo "评审产物已提交到仓库"
+          else
+            echo "无评审产物变更，跳过提交"
+          fi
 
   override:
     if: github.event.action == 'labeled' && github.event.label.name == 'override'
