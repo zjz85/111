@@ -8,7 +8,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import * as path from "node:path";
 
-const SERVER_ENTRY = path.resolve(
+const SERVER_ENTRY_SRC = path.resolve(
   import.meta.dirname, "..", "..", "..", "production", "src", "mcp-server", "index.ts",
 );
 
@@ -17,9 +17,15 @@ let client: Client | null = null;
 async function getClient(): Promise<Client> {
   if (client) return client;
 
+  // CI 下用编译后的 dist/index.js（node 直接跑）；本地用 tsx 跑源码
+  const isCI = !!process.env.GITHUB_ACTIONS;
+  const serverEntry = isCI
+    ? path.join(process.env.GITHUB_WORKSPACE!, "production", "src", "mcp-server", "dist", "index.js")
+    : SERVER_ENTRY_SRC;
+
   const transport = new StdioClientTransport({
-    command: process.env.GITHUB_ACTIONS ? "node" : "npx",
-    args: process.env.GITHUB_ACTIONS ? [SERVER_ENTRY] : ["tsx", SERVER_ENTRY],
+    command: isCI ? "node" : "npx",
+    args: isCI ? [serverEntry] : ["tsx", serverEntry],
   });
 
   client = new Client({ name: "reviewer-agent", version: "1.0.0" }, { capabilities: {} });

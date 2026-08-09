@@ -8,6 +8,7 @@ import { runAgent } from "./utils/agent-loop.js";
 import { IMPLEMENTER_SYSTEM_PROMPT, IMPLEMENTER_TOOLS, implementerTools } from "./agents/implementer.js";
 import { REVIEWER_SYSTEM_PROMPT, REVIEWER_TOOLS, reviewerTools } from "./agents/reviewer.js";
 import { DECIDER_SYSTEM_PROMPT, DECIDER_TOOLS, deciderTools } from "./agents/decider.js";
+import { appendRecord } from "../../production/src/orchestrator/utils/record-store.js";
 
 const prId = process.argv[2];
 if (!prId) {
@@ -85,10 +86,33 @@ ${reviewText}
   fs.writeFileSync(reportPath, reportBody, "utf-8");
   console.log(`\n[Report] 报告已写入: ${reportPath}`);
 
-  // 打回记录：复用上面解析出的 decision
-  if (parsedVerdict?.decision === "reject") {
+  // 写评审记录（误判率监控数据源）
+  const decisionRaw = parsedVerdict?.decision
+    || (/(打回|拒绝|reject)/i.test(reportBody.slice(0, 500)) ? "reject"
+      : /(升级人工|转人工|escalate)/i.test(reportBody.slice(0, 500)) ? "escalate"
+      : "pass");
+  const decision = decisionRaw as "pass" | "reject" | "escalate";
+  const prNumber = parseInt(prId.replace(/\D/g, ""), 10) || 0;
+  appendRecord({
+    prId: prId.toUpperCase().startsWith("PR-") ? prId.toUpperCase() : `PR-${String(prNumber).padStart(3, "0")}`,
+    prNumber,
+    prTitle: "PR 自动初审",
+    decision,
+    weightedScore: 0,
+    hitRules: [],
+    highRiskHit: false,
+    dualModelUsed: false,
+    humanOverridden: false,
+    timestamp: new Date().toISOString(),
+  });
+  console.log(`[Record] 评审记录已写入: decision=${decision}`);
+
+  // 打回记录：decision 为 reject（或报告正文含打回判定，兜底解析失败）必须写入 rejected/
+  const isReject = decision === "reject"
+    || /(打回|拒绝|reject)/i.test(reportBody.slice(0, 500));
+  if (isReject) {
     const rejectedDir = process.env.GITHUB_ACTIONS
-      ? path.join(process.cwd(), "..", "..", "..", "rejected")
+      ? path.join(process.env.GITHUB_WORKSPACE!, "rejected")
       : path.resolve(import.meta.dirname, "..", "..", "rejected");
     fs.mkdirSync(rejectedDir, { recursive: true });
     const rejectedPath = path.join(rejectedDir, `${prId}.md`);
