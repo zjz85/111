@@ -1,0 +1,14 @@
+[
+  {
+    "prId": "PR-011",
+    "prNumber": 11,
+    "prTitle": "PR 自动初审",
+    "decision": "escalate",
+    "weightedScore": 0,
+    "hitRules": [],
+    "highRiskHit": false,
+    "dualModelUsed": false,
+    "humanOverridden": false,
+    "timestamp": "2026-08-09T10:34:34.396Z"
+  }
+]
