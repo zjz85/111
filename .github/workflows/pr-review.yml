@@ -65,7 +65,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 
       - name: 运行 PR 评审
-        timeout-minutes: 20
+        timeout-minutes: 25
         working-directory: exploration/agent-orchestrator
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
