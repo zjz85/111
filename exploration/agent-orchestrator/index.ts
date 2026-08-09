@@ -17,6 +17,13 @@ if (!prId) {
   process.exit(1);
 }
 
+/** 归一化 PR ID：任意输入（11 / pr-001 / PR-001）转成 PR-XXX（补零 3 位） */
+function normalizePrId(raw: string): string {
+  const digits = raw.match(/\d+/)?.[0] ?? "";
+  return `PR-${digits.padStart(3, "0")}`;
+}
+const normalizedPrId = normalizePrId(prId);
+
 async function main() {
   const model = "deepseek-v4-flash";
 
@@ -94,7 +101,7 @@ ${reviewText}
   const decision = decisionRaw as "pass" | "reject" | "escalate";
   const prNumber = parseInt(prId.replace(/\D/g, ""), 10) || 0;
   appendRecord({
-    prId: prId.toUpperCase().startsWith("PR-") ? prId.toUpperCase() : `PR-${String(prNumber).padStart(3, "0")}`,
+    prId: normalizedPrId,
     prNumber,
     prTitle: "PR 自动初审",
     decision,
@@ -124,7 +131,7 @@ ${reviewText}
       ? path.join(process.env.GITHUB_WORKSPACE!, "rejected")
       : path.resolve(import.meta.dirname, "..", "..", "rejected");
     fs.mkdirSync(rejectedDir, { recursive: true });
-    const rejectedPath = path.join(rejectedDir, `${prId}.md`);
+    const rejectedPath = path.join(rejectedDir, `${normalizedPrId}.md`);
     fs.writeFileSync(rejectedPath, reportBody, "utf-8");
     console.log(`[Rejected] 打回记录已写入: ${rejectedPath}`);
   }
