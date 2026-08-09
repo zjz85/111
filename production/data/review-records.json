@@ -84,5 +84,17 @@
     "dualModelUsed": false,
     "humanOverridden": false,
     "timestamp": "2026-08-09T13:20:38.885Z"
+  },
+  {
+    "prId": "PR-020",
+    "prNumber": 20,
+    "prTitle": "PR 自动初审",
+    "decision": "pass",
+    "weightedScore": 0,
+    "hitRules": [],
+    "highRiskHit": false,
+    "dualModelUsed": false,
+    "humanOverridden": false,
+    "timestamp": "2026-08-09T13:48:09.442Z"
   }
 ]
