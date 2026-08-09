@@ -28,10 +28,14 @@ const client = isCI
   ? new Anthropic({
       baseURL: "https://api.deepseek.com/anthropic",
       authToken: process.env.DEEPSEEK_API_KEY || "",
+      timeout: 120_000,
+      maxRetries: 1,
     })
   : new Anthropic({
       baseURL: process.env.ANTHROPIC_BASE_URL || "http://127.0.0.1:15721",
       apiKey: process.env.ANTHROPIC_AUTH_TOKEN || "PROXY_MANAGED",
+      timeout: 120_000,
+      maxRetries: 1,
     });
 
 /**
