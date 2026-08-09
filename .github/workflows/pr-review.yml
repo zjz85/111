@@ -2,10 +2,11 @@ name: PR Auto Review
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, labeled]
 
 jobs:
   review:
+    if: github.event.action != 'labeled'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -35,6 +36,10 @@ jobs:
         working-directory: production/src/orchestrator
         run: npm ci
 
+      - name: 安装 Agent 编排依赖
+        working-directory: exploration/agent-orchestrator
+        run: npm ci
+
       - name: 锁定 PR 创建时刻的规则版本
         id: rules-snapshot
         run: |
@@ -60,11 +65,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 
       - name: 运行 PR 评审
-        working-directory: production/src/orchestrator
+        working-directory: exploration/agent-orchestrator
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           GH_TOKEN: ${{ github.token }}
-          RULES_DIR: ${{ steps.rules-snapshot.outputs.rules_dir }}
         run: |
           set -o pipefail
           npx tsx index.ts ${{ github.event.pull_request.number }} 2>&1 | tee ci-output.log
@@ -76,8 +80,8 @@ jobs:
         with:
           script: |
             const fs = require("fs");
-            const reportPath = `${process.env.GITHUB_WORKSPACE}/production/src/orchestrator/report.md`;
-            const logPath = `${process.env.GITHUB_WORKSPACE}/production/src/orchestrator/ci-output.log`;
+            const reportPath = `${process.env.GITHUB_WORKSPACE}/exploration/agent-orchestrator/report.md`;
+            const logPath = `${process.env.GITHUB_WORKSPACE}/exploration/agent-orchestrator/ci-output.log`;
 
             if (fs.existsSync(reportPath)) {
               const body = fs.readFileSync(reportPath, "utf-8");
@@ -115,3 +119,57 @@ jobs:
           else
             echo "无 rejected 文件，跳过"
           fi
+
+  override:
+    if: github.event.action == 'labeled' && github.event.label.name == 'override'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: 安装 Orchestrator 依赖
+        working-directory: production/src/orchestrator
+        run: npm ci
+
+      - name: 执行推翻
+        working-directory: production/src/orchestrator
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -o pipefail
+          npx tsx override.ts ${{ github.event.pull_request.number }} 2>&1
+
+      - name: 提交推翻记录
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add production/data/review-records.json
+          if [ -d "rejected" ] && [ "$(ls -A rejected 2>/dev/null)" ]; then
+            git add rejected/
+          fi
+          git diff --cached --quiet || git commit -m "Override PR #${{ github.event.pull_request.number }} 的打回判定"
+          git pull --rebase
+          git push
+          echo "推翻记录已提交"
+
+      - name: 贴评论确认
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: "## ✅ 已接受人工推翻\n\n机器人对此 PR 的打回判定已被 `override` 标签推翻，评审记录已标记为 `humanOverridden=true`。",
+            });

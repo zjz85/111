@@ -1,11 +1,16 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import * as path from "node:path";
+import { fileURLToPath } from "node:url";
 
-// MCP Server 入口路径
+// MCP Server 入口路径 — 用 import.meta.url 解析，不依赖 process.cwd()
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const REPO_ROOT = path.resolve(__dirname, "..", "..", "..", "..");
+
 const SERVER_ENTRY = process.env.GITHUB_ACTIONS
   ? path.join(process.env.GITHUB_WORKSPACE!, "production", "src", "mcp-server", "dist", "index.js")
-  : path.resolve(process.cwd(), "..", "mcp-server", "dist", "index.js");
+  : path.join(REPO_ROOT, "production", "src", "mcp-server", "index.ts");
 
 export interface McpCheckResult {
   tool: string;
@@ -76,7 +81,8 @@ export class McpClient {
 
     const result = await this.client.callTool({ name, arguments: args });
 
-    const rawText = result.content
+    const content = result.content as Array<{ type: string; text?: string }>;
+    const rawText = content
       .filter((c): c is { type: "text"; text: string } => c.type === "text")
       .map(c => c.text)
       .join("\n");
