@@ -41,4 +41,22 @@ export class UserController {
     });
     return orders;
   }
+
+  /**
+   * 更新用户资料
+   */
+  async updateUser(id: string, data: { name?: string; email?: string }) {
+    // ❌ ARCH-001 违规：Controller 直连数据库执行更新
+    const user = await this.db.user.update({ where: { id }, data });
+    return user;
+  }
+
+  /**
+   * 删除用户
+   */
+  async deleteUser(id: string) {
+    // ❌ ARCH-001 违规：Controller 直连数据库执行删除
+    const result = await this.db.user.delete({ where: { id } });
+    return result;
+  }
 }
