@@ -8,7 +8,7 @@ import { runAgent } from "./utils/agent-loop.js";
 import { IMPLEMENTER_SYSTEM_PROMPT, IMPLEMENTER_TOOLS, implementerTools } from "./agents/implementer.js";
 import { REVIEWER_SYSTEM_PROMPT, REVIEWER_TOOLS, reviewerTools } from "./agents/reviewer.js";
 import { DECIDER_SYSTEM_PROMPT, DECIDER_TOOLS, deciderTools } from "./agents/decider.js";
-import { appendRecord } from "../../production/src/orchestrator/utils/record-store.js";
+import { appendRecord, checkMisrateAlert } from "../../production/src/orchestrator/utils/record-store.js";
 
 const prId = process.argv[2];
 if (!prId) {
@@ -106,6 +106,13 @@ ${reviewText}
     timestamp: new Date().toISOString(),
   });
   console.log(`[Record] 评审记录已写入: decision=${decision}`);
+
+  // 误判率监控：超阈值输出告警（打回被 override 推翻的占比）
+  const misrateAlert = checkMisrateAlert();
+  if (misrateAlert) {
+    console.error(`[Misrate] ${misrateAlert}`);
+    fs.writeFileSync("misrate-alert.txt", misrateAlert, "utf-8");
+  }
 
   // 打回记录：decision 为 reject（或报告正文含打回判定，兜底解析失败）必须写入 rejected/
   const isReject = decision === "reject"

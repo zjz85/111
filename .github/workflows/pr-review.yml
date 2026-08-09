@@ -107,19 +107,16 @@ jobs:
               console.log("未找到报告或日志文件，跳过");
             }
 
-      - name: 提交 rejected 记录到仓库
+      - name: 提交评审产物到仓库
         if: always()
         run: |
-          if [ -d "rejected" ] && [ "$(ls -A rejected 2>/dev/null)" ]; then
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add rejected/
-            git commit -m "Add rejected record for PR #${{ github.event.pull_request.number }}" || true
-            git push
-            echo "rejected 记录已提交到仓库"
-          else
-            echo "无 rejected 文件，跳过"
-          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add production/data/review-records.json rejected/ misrate-alert.txt 2>/dev/null || true
+          git diff --cached --quiet || git commit -m "Add review artifacts for PR #${{ github.event.pull_request.number }}"
+          git pull --rebase
+          git push
+          echo "评审产物已提交到仓库"
 
   override:
     if: github.event.action == 'labeled' && github.event.label.name == 'override'
