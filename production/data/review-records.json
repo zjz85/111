@@ -1,76 +1,38 @@
 [
   {
-    "prId": "PR-001",
-    "prNumber": 201,
-    "prTitle": "为订单号增加格式校验",
-    "decision": "pass",
-    "weightedScore": 4.6,
+    "prId": "PR-011",
+    "prNumber": 11,
+    "prTitle": "PR 自动初审",
+    "decision": "escalate",
+    "weightedScore": 0,
     "hitRules": [],
     "highRiskHit": false,
     "dualModelUsed": false,
     "humanOverridden": false,
-    "timestamp": "2026-07-29T13:20:36.100Z"
+    "timestamp": "2026-08-09T10:34:34.396Z"
   },
   {
-    "prId": "PR-005",
-    "prNumber": 205,
-    "prTitle": "一次性重写结算模块",
+    "prId": "PR-012",
+    "prNumber": 12,
+    "prTitle": "PR 自动初审",
     "decision": "reject",
-    "weightedScore": 1,
+    "weightedScore": 0,
     "hitRules": [],
-    "highRiskHit": false,
-    "dualModelUsed": true,
-    "humanOverridden": false,
-    "timestamp": "2026-07-29T13:21:00.989Z"
-  },
-  {
-    "prId": "PR-005",
-    "prNumber": 205,
-    "prTitle": "一次性重写结算模块",
-    "decision": "reject",
-    "weightedScore": 2.6,
-    "hitRules": [
-      "SCOPE-001"
-    ],
     "highRiskHit": false,
     "dualModelUsed": false,
     "humanOverridden": false,
-    "timestamp": "2026-07-29T13:21:31.105Z"
+    "timestamp": "2026-08-09T10:40:49.599Z"
   },
   {
-    "prId": "PR-001",
-    "prNumber": 201,
-    "prTitle": "为订单号增加格式校验",
+    "prId": "PR-013",
+    "prNumber": 13,
+    "prTitle": "PR 自动初审",
     "decision": "pass",
-    "weightedScore": 4.45,
+    "weightedScore": 0,
     "hitRules": [],
     "highRiskHit": false,
     "dualModelUsed": false,
     "humanOverridden": false,
-    "timestamp": "2026-07-29T13:24:53.194Z"
-  },
-  {
-    "prId": "PR-001",
-    "prNumber": 201,
-    "prTitle": "为订单号增加格式校验",
-    "decision": "pass",
-    "weightedScore": 4.35,
-    "hitRules": [],
-    "highRiskHit": false,
-    "dualModelUsed": false,
-    "humanOverridden": false,
-    "timestamp": "2026-07-29T13:58:50.157Z"
-  },
-  {
-    "prId": "PR-001",
-    "prNumber": 201,
-    "prTitle": "为订单号增加格式校验",
-    "decision": "pass",
-    "weightedScore": 4.6,
-    "hitRules": [],
-    "highRiskHit": false,
-    "dualModelUsed": false,
-    "humanOverridden": false,
-    "timestamp": "2026-07-29T15:49:12.043Z"
+    "timestamp": "2026-08-09T10:56:06.757Z"
   }
 ]
