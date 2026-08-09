@@ -9,7 +9,7 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 import * as path from "node:path";
 
 const SERVER_ENTRY_SRC = path.resolve(
-  import.meta.dirname, "..", "..", "..", "production", "src", "mcp-server", "index.ts",
+  import.meta.dirname, "..", "..", "mcp-server", "index.ts",
 );
 
 let client: Client | null = null;

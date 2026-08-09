@@ -23,11 +23,11 @@ jobs:
           node-version: "20"
 
       - name: 安装 MCP Server 依赖
-        working-directory: production/src/mcp-server
+        working-directory: mcp-server
         run: npm ci
 
       - name: 编译 MCP Server
-        working-directory: production/src/mcp-server
+        working-directory: mcp-server
         run: |
           rm -rf dist
           npm run build

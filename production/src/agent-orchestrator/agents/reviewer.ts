@@ -12,7 +12,7 @@ import type { ToolExecutor } from "../utils/agent-loop.js";
 import { queryRule } from "./mcp-reviewer-tools.js";
 
 const SKILL_PATH = path.resolve(
-  import.meta.dirname, "..", "..", "..", ".claude", "skills", "four-dimensional-review.md",
+  import.meta.dirname, "..", "..", "..", "..", ".claude", "skills", "four-dimensional-review.md",
 );
 
 function loadSystemPrompt(): string {

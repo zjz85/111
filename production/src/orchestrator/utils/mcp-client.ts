@@ -9,8 +9,8 @@ const __dirname = path.dirname(__filename);
 const REPO_ROOT = path.resolve(__dirname, "..", "..", "..", "..");
 
 const SERVER_ENTRY = process.env.GITHUB_ACTIONS
-  ? path.join(process.env.GITHUB_WORKSPACE!, "production", "src", "mcp-server", "dist", "index.js")
-  : path.join(REPO_ROOT, "production", "src", "mcp-server", "index.ts");
+  ? path.join(process.env.GITHUB_WORKSPACE!, "mcp-server", "dist", "index.js")
+  : path.join(REPO_ROOT, "mcp-server", "index.ts");
 
 export interface McpCheckResult {
   tool: string;

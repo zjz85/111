@@ -1,7 +1,7 @@
 {
   "name": "agent-orchestrator",
-  "version": "0.1.0",
-  "description": "PR评审 Agent SDK 编排器（探索区）",
+  "version": "1.0.0",
+  "description": "PR评审 Agent SDK 编排器（生产区）",
   "type": "module",
   "main": "index.ts",
   "scripts": {
