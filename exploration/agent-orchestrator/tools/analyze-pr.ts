@@ -1,31 +1,29 @@
+/**
+ * PR 预处理工具（探索区版本）
+ *
+ * 直接读取 sample PR，绕过 production mcp-client 的 process.cwd() 路径问题
+ */
+
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { execSync } from "node:child_process";
-import { splitDiff, splitLargeChunks, effectiveAddedLines } from "../utils/diff-splitter.js";
-import { McpClient } from "../utils/mcp-client.js";
-import type { PRMetadata, PreprocessedPR } from "../../shared/types.js";
+import { splitDiff, splitLargeChunks, effectiveAddedLines } from "../../../production/src/orchestrator/utils/diff-splitter.js";
+import { McpClient } from "../../../production/src/orchestrator/utils/mcp-client.js";
+import type { PRMetadata, PreprocessedPR, McpCheckResult } from "../../../production/src/shared/types.js";
 
-const SAMPLE_PRS_DIR = "e:\\大作业\\pr自动初评机器人\\exploration\\sample-prs";
+const SAMPLE_PRS_DIR = path.resolve(import.meta.dirname, "..", "..", "..", "exploration", "sample-prs");
 
-// 高风险代码关键词扫描
 const HIGH_RISK_PATTERNS = [
   { type: "db_operation", pattern: /\b(PrismaClient|db\.|\.query\(|\.execute\(|raw|transaction|createConnection)\b/ },
   { type: "core_interface", pattern: /\b(export interface|export type)\b/i },
   { type: "complex_logic", pattern: /if\s*\([^)]*\)\s*\{\s*if\s*\(/ },
 ];
 
-/**
- * 判断是否在 GitHub Actions 环境中运行。
- */
 function isCI(): boolean {
   return !!process.env.GITHUB_ACTIONS;
 }
 
-/**
- * 在 GitHub Actions 中通过 gh CLI 拉取 PR 数据。
- */
 async function fetchGitHubPR(prNumber: number): Promise<PreprocessedPR> {
-  // 取 PR 元信息
   const jsonRaw = execSync(
     `gh pr view ${prNumber} --json number,title,author,baseRefName,headRefName,createdAt,body,files`,
     { encoding: "utf-8" }
@@ -43,31 +41,17 @@ async function fetchGitHubPR(prNumber: number): Promise<PreprocessedPR> {
     headSha: data.headRefName,
     createdAt: data.createdAt,
     changedFiles,
-    generatedFiles: [], // CI 模式下无生成文件标记，交给 DeepSeek 判断
+    generatedFiles: [],
   };
 
-  // 拿 diff
   const diffText = execSync(`gh pr diff ${prNumber}`, { encoding: "utf-8" });
-
-  const prDescription = data.body ?? "";
-
-  return processPR({
-    metadata,
-    diffText,
-    prDescription,
-  });
+  return processPR({ metadata, diffText, prDescription: data.body ?? "" });
 }
 
-/**
- * 读取一个 sample PR 并做预处理。
- */
-export async function fetchPR(prId: string): Promise<PreprocessedPR> {
-  // CI 模式：参数是 PR number
+export async function analyzePr(prId: string): Promise<PreprocessedPR> {
   if (isCI()) {
     const num = parseInt(prId, 10);
-    if (!isNaN(num)) {
-      return fetchGitHubPR(num);
-    }
+    if (!isNaN(num)) return fetchGitHubPR(num);
     throw new Error(`CI 模式无法解析 PR number: ${prId}`);
   }
 
@@ -86,7 +70,6 @@ export async function fetchPR(prId: string): Promise<PreprocessedPR> {
 
   const diffText = fs.readFileSync(path.join(prDir, "changes.diff"), "utf-8");
 
-  // 读取 description.md（如果存在）
   let prDescription = "";
   const descPath = path.join(prDir, "description.md");
   if (fs.existsSync(descPath)) {
@@ -96,9 +79,6 @@ export async function fetchPR(prId: string): Promise<PreprocessedPR> {
   return processPR({ metadata, diffText, prDescription });
 }
 
-/**
- * 通用的 PR 预处理流程：分片 → MCP 检查 → 高风险扫描
- */
 async function processPR(input: {
   metadata: PRMetadata;
   diffText: string;
@@ -106,23 +86,22 @@ async function processPR(input: {
 }): Promise<PreprocessedPR> {
   const { metadata, diffText, prDescription } = input;
 
-  // 检测 feature flag 相关变更
   const hasFlagChange = metadata.changedFiles.some(
     f => f.includes("flags.yaml") || f.includes("config/flags") || f.includes("feature-flag")
   );
 
-  // ── Step 1: 分片 ──────────────────────────────
   const chunks = splitDiff(diffText, metadata.generatedFiles);
   const finalChunks = splitLargeChunks(chunks);
   const effectiveLines = effectiveAddedLines(finalChunks);
   const hasGeneratedFiles = metadata.generatedFiles.length > 0;
 
-  // ── Step 2: 调 MCP 查规范 ─────────────────────
+  // MCP 检查
+  // mcp-client.ts 用 process.cwd() 相对路径解析 SERVER_ENTRY。
+  // 从 exploration/ 跑时 cwd 不对，临时指向 production/src/mcp-server 源码（tsx 直接跑）
+  const mcpResults: McpCheckResult[] = [];
   const mcp = new McpClient();
-  const mcpResults: PreprocessedPR["mcpResults"] = [];
   try {
     await mcp.connect();
-
     const complexity = await mcp.checkComplexity({
       addedLines: effectiveLines,
       changedFiles: metadata.changedFiles.length,
@@ -139,11 +118,20 @@ async function processPR(input: {
 
     const security = await mcp.checkSecurity({ diffContent: diffText });
     mcpResults.push(security);
+  } catch (err) {
+    console.error("[analyze-pr] MCP 检查失败:", String(err));
+    mcpResults.push({
+      tool: "mcp_error",
+      passed: false,
+      hits: [],
+      rawText: `MCP 检查失败: ${String(err)}`,
+    });
+    // 继续执行，不中断
   } finally {
-    await mcp.disconnect();
+    try { await mcp.disconnect(); } catch { /* ok */ }
   }
 
-  // ── Step 3: 高风险扫描 ────────────────────────
+  // 高风险扫描
   let highRiskHit = false;
   const highRiskTypes: string[] = [];
   for (const { type, pattern } of HIGH_RISK_PATTERNS) {
