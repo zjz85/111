@@ -22,7 +22,7 @@
     ],
     "highRiskHit": false,
     "dualModelUsed": false,
-    "humanOverridden": false,
+    "humanOverridden": true,
     "timestamp": "2026-08-09T11:18:20.996Z"
   }
 ]
