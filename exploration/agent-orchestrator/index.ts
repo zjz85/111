@@ -22,7 +22,7 @@ async function main() {
   // ──── Stage 1: 实施 Agent ────
   console.log("[Agent 1/3] 实施 Agent 抓取 PR...");
   const { text: prText } = await runAgent(
-    { model, systemPrompt: IMPLEMENTER_SYSTEM_PROMPT, tools: IMPLEMENTER_TOOLS },
+    { model, systemPrompt: IMPLEMENTER_SYSTEM_PROMPT, tools: IMPLEMENTER_TOOLS, maxTokens: 12000 },
     implementerTools,
     `请分析 PR: ${prId}`,
   );
