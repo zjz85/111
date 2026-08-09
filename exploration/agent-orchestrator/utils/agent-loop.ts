@@ -58,6 +58,8 @@ export async function runAgent(
       model: config.model,
       max_tokens: config.maxTokens ?? 4096,
       temperature: config.temperature ?? 0.1,
+      // 禁用 thinking，避免 thinking token 挤占 max_tokens 预算导致输出截断
+      thinking: { type: "disabled" },
       system: config.systemPrompt,
       messages,
       tools: config.tools,
